@@ -30,17 +30,17 @@
 #define RPU_CTRL__RPU_GLBL_CNTL__SLSPLIT 0x8
 
 #define RPU_CTRL__RPU_0_CFG  0x100
-#define RPU_CTRL__RPU_0_CFG__NCPUHALT 0x1
+#define RPU_CTRL__RPU_0_CFG__N_CPU_HALT 0x1
 
 #define RPU_CTRL__RPU_1_CFG  0x200
-#define RPU_CTRL__RPU_1_CFG__NCPUHALT 0x1
+#define RPU_CTRL__RPU_1_CFG__N_CPU_HALT 0x1
 
 #define RPU_CTRL__RPU_2_CFG  0x270
-#define RPU_CTRL__RPU_2_CFG__NCPUHALT 0x1
+#define RPU_CTRL__RPU_2_CFG__N_CPU_HALT 0x1
 
-#define RESET_CTRL__NCPUHALT    0x0
-#define RESET_CTRL__RESET       0x4
-#define RESET_CTRL__INTC_RESET  0x8
+#define RESET_CTRL__N_CPU_HALT      0x0
+#define RESET_CTRL__CPU_RESET       0x4
+#define RESET_CTRL__INTC_RESET      0x8
 
 // field spec applies to both N_CPU_HALT and CPU_RESET registers
 #define RESET_CTRL__CPUS__RTPS_R52__SHIFT 0
@@ -69,17 +69,17 @@ int reset_assert(comp_t comps)
     if (comps & COMP_CPUS_RTPS_R52) {
         uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS_R52) >> COMP_CPUS_SHIFT_RTPS_R52)
                                     << RESET_CTRL__CPUS__RTPS_R52__SHIFT;
-        REGB_SET32(RESET_CTRL, RESET_CTRL__RESET, cpu_bitmask);
+        REGB_SET32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
         REGB_SET32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_R52);
-        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__NCPUHALT, cpu_bitmask);
+        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
     }
 
     if (comps & COMP_CPUS_RTPS_A53) {
         uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS_A53) >> COMP_CPUS_SHIFT_RTPS_A53)
                                     << RESET_CTRL__CPUS__RTPS_A53__SHIFT;
-        REGB_SET32(RESET_CTRL, RESET_CTRL__RESET, cpu_bitmask);
+        REGB_SET32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
         REGB_SET32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_A53);
-        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__NCPUHALT, cpu_bitmask);
+        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
     }
 
 #if 0
@@ -113,19 +113,19 @@ int reset_release(comp_t comps)
     if (comps & COMP_CPUS_RTPS) {
         uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS) >> COMP_CPUS_SHIFT_RTPS)
                                     << RESET_CTRL__CPUS__RTPS_R52__SHIFT;
-        REGB_SET32(RESET_CTRL, RESET_CTRL__NCPUHALT, cpu_bitmask);
+        REGB_SET32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
         REGB_CLEAR32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_R52);
         mdelay(1); // wait for GIC at least 5 cycles (GIC-500 TRM Table A-1)
-        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__RESET, cpu_bitmask);
+        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
     }
 
     if (comps & COMP_CPUS_RTPS_A53) {
         uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS_A53) >> COMP_CPUS_SHIFT_RTPS)
                                     << RESET_CTRL__CPUS__RTPS_A53__SHIFT;
-        REGB_SET32(RESET_CTRL, RESET_CTRL__NCPUHALT, cpu_bitmask);
+        REGB_SET32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
         REGB_CLEAR32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_A53);
         mdelay(1); // wait for GIC at least 5 cycles (GIC-500 TRM Table A-1)
-        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__RESET, cpu_bitmask);
+        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
     }
 
 #if 0
