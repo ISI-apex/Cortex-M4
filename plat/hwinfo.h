@@ -61,6 +61,8 @@
 #define CRL       0xff5e0000
 #define RPU_CTRL  0xff9a0000
 
+#define RESET_CTRL              0x22000000
+
 #define HSIO_BASE               0xe3000000
 #define HSIO_SIZE               0x15000000
 
