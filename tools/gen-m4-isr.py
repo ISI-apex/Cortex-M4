@@ -196,7 +196,8 @@ f.write("\n")
 
 f.write(
 """
-__entry: /* same as 'reset', but must not be marked with .thumb_func */
+.thumb_func
+__entry: /* same location as 'reset'*/
 
 .thumb_func
 reset:
