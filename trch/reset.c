@@ -45,9 +45,11 @@
 // field spec applies to both N_CPU_HALT and CPU_RESET registers
 #define RESET_CTRL__CPUS__RTPS_R52__SHIFT 0
 #define RESET_CTRL__CPUS__RTPS_A53__SHIFT 2
+#define RESET_CTRL__CPUS__HPPS__SHIFT     3
 
 #define INTC__RTPS_R52      0x1
 #define INTC__RTPS_A53      0x2
+#define INTC__HPPS          0x4
 
 #if CONFIG_CONSOLE
 static const char *rtps_r52_mode_name(unsigned m)
@@ -70,6 +72,7 @@ int reset_assert(comp_t comps)
         uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS_R52) >> COMP_CPUS_SHIFT_RTPS_R52)
                                     << RESET_CTRL__CPUS__RTPS_R52__SHIFT;
         REGB_SET32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
+        // TODO: semantics of resetting the GIC when only one of the two R52 cores is reset?
         REGB_SET32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_R52);
         REGB_CLEAR32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
     }
@@ -79,6 +82,15 @@ int reset_assert(comp_t comps)
                                     << RESET_CTRL__CPUS__RTPS_A53__SHIFT;
         REGB_SET32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
         REGB_SET32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_A53);
+        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
+    }
+
+    if (comps & COMP_CPUS_HPPS) {
+        uint8_t cpu_bitmask = ((comps & COMP_CPUS_HPPS) >> COMP_CPUS_SHIFT_HPPS)
+                                    << RESET_CTRL__CPUS__HPPS__SHIFT;
+        REGB_SET32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
+        if ((comps & COMP_CPUS_HPPS) == COMP_CPUS_HPPS) // if all CPUs
+            REGB_SET32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__HPPS);
         REGB_CLEAR32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
     }
 
@@ -110,8 +122,8 @@ int reset_release(comp_t comps)
 
     // Note: we tie the GICs to the respective CPUs unconditionally here
 
-    if (comps & COMP_CPUS_RTPS) {
-        uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS) >> COMP_CPUS_SHIFT_RTPS)
+    if (comps & COMP_CPUS_RTPS_R52) {
+        uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS_R52) >> COMP_CPUS_SHIFT_RTPS_R52)
                                     << RESET_CTRL__CPUS__RTPS_R52__SHIFT;
         REGB_SET32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
         REGB_CLEAR32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_R52);
@@ -120,10 +132,21 @@ int reset_release(comp_t comps)
     }
 
     if (comps & COMP_CPUS_RTPS_A53) {
-        uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS_A53) >> COMP_CPUS_SHIFT_RTPS)
+        uint8_t cpu_bitmask = ((comps & COMP_CPUS_RTPS_A53) >> COMP_CPUS_SHIFT_RTPS_A53)
                                     << RESET_CTRL__CPUS__RTPS_A53__SHIFT;
         REGB_SET32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
         REGB_CLEAR32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__RTPS_A53);
+        mdelay(1); // wait for GIC at least 5 cycles (GIC-500 TRM Table A-1)
+        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
+    }
+
+    if (comps & COMP_CPUS_HPPS) {
+        uint8_t cpu_bitmask = ((comps & COMP_CPUS_HPPS) >> COMP_CPUS_SHIFT_HPPS)
+                                    << RESET_CTRL__CPUS__HPPS__SHIFT;
+        REGB_SET32(RESET_CTRL, RESET_CTRL__N_CPU_HALT, cpu_bitmask);
+        // Reset GIC (Note: GIC might already be active if releasing a
+        // secondary CPU but harmless to clear the cleared bit anyway.
+        REGB_CLEAR32(RESET_CTRL, RESET_CTRL__INTC_RESET, INTC__HPPS);
         mdelay(1); // wait for GIC at least 5 cycles (GIC-500 TRM Table A-1)
         REGB_CLEAR32(RESET_CTRL, RESET_CTRL__CPU_RESET, cpu_bitmask);
     }
