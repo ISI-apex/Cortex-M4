@@ -22,3 +22,18 @@
 #define MASTER_ID_HPPS_DMA  0x877
 #define MASTER_ID_SRIO0_DMA 0x878
 #define MASTER_ID_SRIO1_DMA 0x879
+
+
+/* MMU Stream IDs */
+
+#define MMU_SID_RTPS_DMA                 0x1
+#define MMU_SID_RTPS_PCIE                0x2
+#define MMU_SID_NIC5                     0x3
+#define MMU_SID_HPPS_DMA                 0x4
+#define MMU_SID_HPPS_PCIE                0x5
+#define MMU_SID_HPPS_ETH                 0x6
+#define MMU_SID_HPPS_TTE                 0x7
+#define MMU_SID_HPPS_SRIO_DMA_0		 0x8
+#define MMU_SID_HPPS_SRIO_DMA_1          0x9
+#define MMU_SID_HPPS_SRIO_EP_0          0x10
+#define MMU_SID_HPPS_SRIO_EP_1          0x11

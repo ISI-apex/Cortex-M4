@@ -37,7 +37,7 @@ int test_rtps_mmu()
                 ALIGN(RTPS_DMA_SIZE, PAGESIZE_BITS)))
 	return 1;
 
-    struct mmu_stream *stream = mmu_stream_create(MASTER_ID_RTPS_DMA, ctx);
+    struct mmu_stream *stream = mmu_stream_create(MMU_SID_RTPS_DMA, ctx);
     if (!stream)
 	return 1;
 

@@ -29,7 +29,7 @@ int rt_mmu_init()
     if (!ctx)
 	goto cleanup_trch_context;
 
-    trch_stream = mmu_stream_create(MASTER_ID_TRCH_CPU, ctx);
+    trch_stream = mmu_stream_create(MMU_SID_NIC5, ctx);
     if (!trch_stream) goto cleanup_trch_stream;
     rtps_r52_0_stream = mmu_stream_create(MASTER_ID_RTPS_CPU0, ctx);
     if (!rtps_r52_0_stream) goto cleanup_rtps_r52_0_stream;
