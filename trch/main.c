@@ -325,9 +325,6 @@ int main ( void )
     cmd_handler_register(server_process);
 
     unsigned iter = 0;
-#if TEST_R52_SMP
-    bool r52_1_init = false;
-#endif
     while (1) {
         bool verbose = iter++ % MAIN_LOOP_SILENT_ITERS == 0;
         if (verbose)
