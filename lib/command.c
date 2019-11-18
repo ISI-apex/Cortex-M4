@@ -104,7 +104,7 @@ void cmd_handle(struct cmd *cmd)
     printf("command: handle: %s: reply %u arg %u...\r\n", cmd->link->name,
            reply[0], reply[CMD_MSG_PAYLOAD_OFFSET]);
 
-    rc = cmd->link->send(cmd->link, CMD_TIMEOUT_MS_REPLY, reply, sizeof(reply));
+    rc = cmd->link->send(cmd->link, CMD_TIMEOUT_MS_REPLY, reply, reply_sz);
     if (rc)
         printf("command: handle: %s: reply sent and ACK'd\r\n", cmd->link->name);
     else
