@@ -26,5 +26,6 @@ void *object_alloc(const char *name, void *array, unsigned elems, unsigned sz)
 
 void object_free(void *obj, unsigned sz)
 {
+    ASSERT(obj);
     bzero(obj, sz);
 }
