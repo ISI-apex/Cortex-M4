@@ -3,6 +3,7 @@
 #include "mailbox.h"
 #include "mem.h"
 #include "console.h"
+#include "panic.h"
 
 #include "command.h"
 
@@ -79,6 +80,7 @@ void cmd_handle(struct cmd *cmd)
     int reply_sz;
     size_t rc;
 
+    ASSERT(cmd);
     printf("command: handle: cmd %u arg %u...\r\n",
            cmd->msg[0], cmd->msg[CMD_MSG_PAYLOAD_OFFSET]);
 
@@ -98,6 +100,7 @@ void cmd_handle(struct cmd *cmd)
         return;
     }
 
+    ASSERT(cmd->link);
     printf("command: handle: %s: reply %u arg %u...\r\n", cmd->link->name,
            reply[0], reply[CMD_MSG_PAYLOAD_OFFSET]);
 
