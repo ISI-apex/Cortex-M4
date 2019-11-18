@@ -76,7 +76,7 @@ static void handle_cmd(void *arg)
 
     printf("%s: handle_cmd\r\n", link->name);
     // read never fails if sizeof(cmd.msg) > 0
-    mbox_read(mlink->mbox_from, cmd.msg, sizeof(cmd.msg));
+    cmd.len = mbox_read(mlink->mbox_from, cmd.msg, sizeof(cmd.msg));
     mbox_event_clear_rcv(mlink->mbox_from);
     mbox_event_set_ack(mlink->mbox_from);
     if (cmd_enqueue(&cmd))

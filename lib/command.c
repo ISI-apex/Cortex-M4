@@ -38,7 +38,8 @@ int cmd_enqueue(struct cmd *cmd)
 
     // cmdq[cmdq_head] = *cmd; // can't because GCC inserts a memcpy
     cmdq[cmdq_head].link = cmd->link;
-    for (i = 0; i < CMD_MSG_SZ; ++i)
+    cmdq[cmdq_head].len = cmd->len;
+    for (i = 0; i < cmd->len; ++i)
         cmdq[cmdq_head].msg[i] = cmd->msg[i];
 
     printf("command: enqueue (tail %u head %u): cmd %u arg %u...\r\n",
@@ -61,7 +62,8 @@ int cmd_dequeue(struct cmd *cmd)
 
     // *cmd = cmdq[cmdq_tail].cmd; // can't because GCC inserts a memcpy
     cmd->link = cmdq[cmdq_tail].link;
-    for (i = 0; i < CMD_MSG_SZ; ++i)
+    cmd->len = cmdq[cmdq_tail].len;
+    for (i = 0; i < cmd->len; ++i)
         cmd->msg[i] = cmdq[cmdq_tail].msg[i];
     printf("command: dequeue (tail %u head %u): cmd %u arg %u...\r\n",
            cmdq_tail, cmdq_head,

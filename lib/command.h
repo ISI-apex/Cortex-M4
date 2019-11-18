@@ -31,6 +31,7 @@ struct cmd {
     // the first byte of the message is the type, the next 3 bytes are reserved
     // the remainder of the msg is available for the payload
     uint8_t msg[CMD_MSG_SZ];
+    unsigned len; /* the populated bytes in 'msg' */
     struct link *link;
 };
 

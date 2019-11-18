@@ -47,9 +47,9 @@ int server_process(struct cmd *cmd, void *reply, size_t reply_sz)
             reply_u8[0] = CMD_PONG;
             for (i = 1; i < CMD_MSG_PAYLOAD_OFFSET && i < reply_sz; i++)
                 reply_u8[i] = 0;
-            for (i = CMD_MSG_PAYLOAD_OFFSET; i < reply_sz; i++)
+            for (i = CMD_MSG_PAYLOAD_OFFSET; i < cmd->len; i++)
                 reply_u8[i] = cmd->msg[i];
-            return reply_sz;
+            return cmd->len;
         case CMD_PONG:
             printf("PONG ...\r\n");
             return 0;

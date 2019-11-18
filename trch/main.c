@@ -354,14 +354,13 @@ int main ( void )
 
         struct cmd cmd;
         struct link *link_curr;
-        int sz;
         llist_iter_init(&link_list);
         do {
             link_curr = (struct link *) llist_iter_next(&link_list);
             if (!link_curr)
                 break;
-            sz = link_curr->recv(link_curr, cmd.msg, sizeof(cmd.msg));
-            if (sz) {
+            cmd.len = link_curr->recv(link_curr, cmd.msg, sizeof(cmd.msg));
+            if (cmd.len) {
                 printf("%s: recv: got message\r\n", link_curr->name);
                 cmd.link = link_curr;
                 if (cmd_enqueue(&cmd))
