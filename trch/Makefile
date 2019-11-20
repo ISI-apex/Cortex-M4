@@ -121,6 +121,7 @@ OBJS = \
        lib/balloc.o \
        lib/bit.o \
        lib/command.o \
+       lib/event.o \
        lib/intc.o \
        lib/list.o \
        lib/llist.o \

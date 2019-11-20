@@ -9,6 +9,7 @@
 #include "board.h"
 #include "console.h"
 #include "dmas.h"
+#include "event.h"
 #include "hwinfo.h"
 #include "llist.h"
 #include "mailbox-link.h"
@@ -113,6 +114,9 @@ int main ( void )
     sw_timer_init(SYSTICK_CLK_HZ);
 #endif // CONFIG_SLEEP_TIMER
 #endif // CONFIG_SYSTICK
+
+    struct ev_loop main_event_loop;
+    ev_loop_init(&main_event_loop, "main");
 
 #if TEST_ETIMER
     if (test_etimer())
@@ -357,6 +361,12 @@ int main ( void )
             verbose = true; // to end log with 'waiting' msg
         }
 
+        /* only process one at a time, and go around the main loop */
+        if (!ev_loop_process(&main_event_loop)) {
+            verbose = true; /* to end output with 'waiting' msg */
+        }
+
+        /* TODO: move within shmem-link, use event loop */
         struct cmd cmd;
         struct link *link_curr;
         llist_iter_init(&link_list);
@@ -372,13 +382,16 @@ int main ( void )
                     trch_panic("TRCH: failed to enqueue command");
             }
         } while (1);
+
+        /* TODO: implement using event loop */
         while (!cmd_dequeue(&cmd)) {
             cmd_handle(&cmd);
             verbose = true; // to end log with 'waiting' msg
         }
 
         int_disable(); // the check and the WFI must be atomic
-        if (!cmd_pending() && !boot_pending()) {
+        if (!cmd_pending() && !boot_pending() &&
+            !ev_loop_pending(&main_event_loop)) {
             if (verbose)
                 printf("[%u] Waiting for interrupt...\r\n", iter);
             asm("wfi"); // ignores PRIMASK set by int_disable
