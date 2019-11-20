@@ -136,6 +136,7 @@ struct link *shmem_link_connect(const char *name, volatile void *addr_out,
     link->disconnect = shmem_link_disconnect;
     link->send = shmem_link_send;
     link->request = shmem_link_request;
+    link->request_async = NULL;
     link->recv = shmem_link_recv;
     return link;
 

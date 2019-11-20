@@ -236,6 +236,7 @@ struct link *mbox_link_connect(const char *name, struct mbox_link_dev *ldev,
     link->disconnect = mbox_link_disconnect;
     link->send = mbox_link_send;
     link->request = mbox_link_request;
+    link->request_async = NULL;
     link->recv = NULL;
     return link;
 
