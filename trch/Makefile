@@ -122,6 +122,7 @@ OBJS = \
        lib/bit.o \
        lib/command.o \
        lib/intc.o \
+       lib/list.o \
        lib/llist.o \
        lib/mailbox-link.o \
        lib/mem.o \
@@ -133,6 +134,7 @@ OBJS = \
        lib/shmem-link.o \
        lib/sleep.o \
        lib/str.o \
+       lib/swtimer.o \
        plat/board.o \
        boot.o \
        isr.o \

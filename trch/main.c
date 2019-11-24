@@ -26,6 +26,7 @@
 #include "shmem-link.h"
 #include "sleep.h"
 #include "smc.h"
+#include "swtimer.h"
 #include "systick.h"
 #include "test.h"
 #include "watchdog.h"
@@ -81,6 +82,7 @@ static void systick_tick(void *arg)
 
 #if CONFIG_SLEEP_TIMER
     sleep_tick(SYSTICK_INTERVAL_CYCLES);
+    sw_timer_tick(SYSTICK_INTERVAL_CYCLES);
 #endif // CONFIG_SLEEP_TIMER
 }
 #endif // CONFIG_SYSTICK
@@ -108,6 +110,7 @@ int main ( void )
 
 #if CONFIG_SLEEP_TIMER
     sleep_set_clock(SYSTICK_CLK_HZ);
+    sw_timer_init(SYSTICK_CLK_HZ);
 #endif // CONFIG_SLEEP_TIMER
 #endif // CONFIG_SYSTICK
 
@@ -342,6 +345,8 @@ int main ( void )
 #endif // CONFIG_TRCH_WDT
 
         //printf("main\r\n");
+
+        sw_timer_run();
 
         subsys_t subsys;
         while (!boot_handle(&subsys)) {
