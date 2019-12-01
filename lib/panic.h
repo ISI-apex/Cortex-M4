@@ -11,6 +11,11 @@
                 printf("ASSERT: %s:%u: %s\r\n", __FILE__, __LINE__, #cond); \
                 panic("ASSERT"); \
         }
+#define PANIC(msg) do { \
+    printf("PANIC: %s:%u\r\n", __FILE__, __LINE__); \
+    panic(msg); \
+} while (0);
+
 
 // Define DEBUG to 1 in the source file that you want to debug
 // before the #include statement for this header.
