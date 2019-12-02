@@ -1374,6 +1374,8 @@ struct dma_tx *dma_transfer(struct dma *dma, unsigned chan,
                             uint32_t *src, uint32_t *dst, unsigned sz,
                             dma_cb_t cb, void *cb_arg)
 {
+    ASSERT(dma);
+    ASSERT(src && dst);
     struct pl330_dmac *pl330 = (struct pl330_dmac *)dma; // TODO: rename?
 
     printf("DMA %s: chan %u: %p -> %p sz %x\r\n",
