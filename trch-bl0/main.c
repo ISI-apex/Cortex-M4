@@ -14,9 +14,9 @@
 #include "panic.h"
 
 #if DEBUG
-#define PANIC panic
+#define PANICX PANIC
 #else /* !DEBUG (no console) */
-#define PANIC(...) while (1)
+#define PANICX(...) while (1)
 #endif /* !DEBUG */
 
 #define VECTOR_TABLE_SIZE 0x400
@@ -162,7 +162,7 @@ static uint8_t *get_smc_sram_rank_addr(struct smc *smc, unsigned rank)
         case 2: return (uint8_t *)SMC_LSIO_SRAM_BASE2;
         case 3: return (uint8_t *)SMC_LSIO_SRAM_BASE3;
         default:
-            PANIC("rank index out of range");
+            PANICX("rank index out of range");
     }
 #endif
     return NULL; /* unreachable */
@@ -199,7 +199,7 @@ int main ( void )
     DPRINTF("BL0: boot select: 0x%x\r\n", boot_select);
     if (parity_check(boot_select) < 0) {
         /* TODO: should anything be fatal? maybe assume some default? */
-        PANIC("BL0: FATAL: boot selector code parity check failed\r\n");
+        PANICX("BL0: FATAL: boot selector code parity check failed\r\n");
     }
     bool failover = BS_MASK(boot_select, BS_FAILOVER_SHIFT);
     /* 1. select the interface */
@@ -293,7 +293,7 @@ int main ( void )
     }
     if (i == mem_ranks_trial) {
         /* TODO: should anything be fatal? maybe should keep looping? */
-        PANIC("BL0: FATAL: all backup copies failed\r\n");
+        PANICX("BL0: FATAL: all backup copies failed\r\n");
     }
 
     /* move bl1 image to the actual bl1_load_addr */ 
@@ -312,6 +312,6 @@ int main ( void )
     // invalidate_icache();
     clean_and_jump(config_blob.bl1_entry_offset, STACK_POINTER);
 
-    PANIC("unreacheable");
+    PANICX("unreacheable");
     return 0; /* unreachable */
 }
