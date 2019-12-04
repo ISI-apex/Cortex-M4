@@ -53,12 +53,13 @@ int rt_mmu_init()
     if (mmu_map(ctx, (uint32_t)HSIO_BASE, (uint32_t)HSIO_BASE, HSIO_SIZE))
         goto cleanup_trch_hsio;
 
-    if (mmu_map(ctx, HPPS_DDR_LOW_ADDR, HPPS_DDR_LOW_ADDR,
-                          HPPS_DDR_LOW_SIZE))
+    if (mmu_map(ctx, HPPS_DDR_LOW_ADDR__HPPS_SMP, HPPS_DDR_LOW_ADDR__HPPS_SMP,
+                HPPS_DDR_LOW_SIZE__HPPS_SMP))
         goto cleanup_trch_hpps_ddr_low;
 
 #if CONFIG_HPPS_TRCH_SHMEM || CONFIG_HPPS_TRCH_SHMEM_SSW
-    if (mmu_map(ctx, HPPS_SHM_ADDR, HPPS_SHM_ADDR, HPPS_SHM_SIZE))
+    if (mmu_map(ctx, HPPS_SHM_ADDR__HPPS_SMP, HPPS_SHM_ADDR__HPPS_SMP,
+                HPPS_SHM_SIZE__HPPS_SMP))
         goto cleanup_hpps_shmem;
 #endif /* CONFIG_HPPS_TRCH_SHMEM */
 
@@ -85,10 +86,10 @@ cleanup_hi0_win:
 cleanup_hi1_win:
 #endif // TEST_RT_MMU
 #if CONFIG_HPPS_TRCH_SMMEM || CONFIG_HPPS_TRCH_SHMEM_SSW
-    mmu_unmap(ctx, HPPS_SHM_ADDR, HPPS_SHM_SIZE);
+    mmu_unmap(ctx, HPPS_SHM_ADDR__HPPS_SMP, HPPS_SHM_SIZE__HPPS_SMP);
 cleanup_hpps_shmem:
 #endif /* CONFIG_HPPS_TRCH_SMMEM || CONFIG_HPPS_TRCH_SHMEM_SSW */
-    mmu_unmap(ctx, HPPS_DDR_LOW_ADDR, HPPS_DDR_LOW_SIZE);
+    mmu_unmap(ctx, HPPS_DDR_LOW_ADDR__HPPS_SMP, HPPS_DDR_LOW_SIZE__HPPS_SMP);
 cleanup_trch_hpps_ddr_low:
     mmu_unmap(ctx, (uint32_t)HSIO_BASE, HSIO_SIZE);
 cleanup_trch_hsio:
@@ -117,7 +118,8 @@ int rt_mmu_deinit()
     int rc = 0;
     mmu_disable(rt_mmu);
 
-    rc |= mmu_unmap(ctx, HPPS_DDR_LOW_ADDR, HPPS_DDR_LOW_SIZE);
+    rc |= mmu_unmap(ctx, HPPS_DDR_LOW_ADDR__HPPS_SMP,
+            HPPS_DDR_LOW_SIZE__HPPS_SMP);
     rc |= mmu_unmap(ctx, (uint32_t)HSIO_BASE, HSIO_SIZE);
     rc |= mmu_unmap(ctx, (uint32_t)MBOX_HPPS_RTPS__BASE, HPSC_MBOX_AS_SIZE);
     rc |= mmu_unmap(ctx, (uint32_t)MBOX_HPPS_TRCH__BASE, HPSC_MBOX_AS_SIZE);
