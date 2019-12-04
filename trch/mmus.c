@@ -58,8 +58,8 @@ int rt_mmu_init()
         goto cleanup_trch_hpps_ddr_low;
 
 #if CONFIG_HPPS_TRCH_SHMEM || CONFIG_HPPS_TRCH_SHMEM_SSW
-    if (mmu_map(ctx, HPPS_SHM_ADDR__HPPS_SMP, HPPS_SHM_ADDR__HPPS_SMP,
-                HPPS_SHM_SIZE__HPPS_SMP))
+    if (mmu_map(ctx, HPPS_DDR_ADDR__SHM__HPPS_SMP, HPPS_DDR_ADDR__SHM__HPPS_SMP,
+            HPPS_DDR_SIZE__SHM__HPPS_SMP))
         goto cleanup_hpps_shmem;
 #endif /* CONFIG_HPPS_TRCH_SHMEM */
 
@@ -86,7 +86,7 @@ cleanup_hi0_win:
 cleanup_hi1_win:
 #endif // TEST_RT_MMU
 #if CONFIG_HPPS_TRCH_SMMEM || CONFIG_HPPS_TRCH_SHMEM_SSW
-    mmu_unmap(ctx, HPPS_SHM_ADDR__HPPS_SMP, HPPS_SHM_SIZE__HPPS_SMP);
+    mmu_unmap(ctx, HPPS_DDR_ADDR__SHM__HPPS_SMP, HPPS_DDR_SIZE__SHM__HPPS_SMP);
 cleanup_hpps_shmem:
 #endif /* CONFIG_HPPS_TRCH_SMMEM || CONFIG_HPPS_TRCH_SHMEM_SSW */
     mmu_unmap(ctx, HPPS_DDR_LOW_ADDR__HPPS_SMP, HPPS_DDR_LOW_SIZE__HPPS_SMP);

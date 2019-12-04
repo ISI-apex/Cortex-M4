@@ -278,8 +278,8 @@ int main ( void )
 #if CONFIG_RTPS_TRCH_SHMEM
         rtps_shm_links[0] = shmem_link_connect(
             "RTPS_R52_LOCKSTEP_SSW_SHMEM_LINK",
-            RTPS_DDR_ADDR__SHM__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RPLY,
-            RTPS_DDR_ADDR__SHM__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RQST);
+            RTPS_DDR_ADDR__SHM__TRCH_SSW__RTPS_R52_LOCKSTEP_SSW,
+            RTPS_DDR_ADDR__SHM__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW);
         if (!rtps_shm_links[0])
             panic("RTPS_R52_LOCKSTEP_SSW_SHMEM_LINK");
         if (llist_insert(&link_list, rtps_shm_links[0]))
@@ -299,8 +299,8 @@ int main ( void )
 #endif /* CONFIG_RTPS_TRCH_MAILBOX */
 #if CONFIG_RTPS_TRCH_SHMEM
         rtps_shm_links[0] = shmem_link_connect("RTPS_R52_SMP_SSW_SHMEM_LINK",
-            RTPS_DDR_ADDR__SHM__RTPS_R52_SMP_SSW__TRCH_SSW__RPLY,
-            RTPS_DDR_ADDR__SHM__RTPS_R52_SMP_SSW__TRCH_SSW__RQST);
+            RTPS_DDR_ADDR__SHM__TRCH_SSW__RTPS_R52_SMP_SSW,
+            RTPS_DDR_ADDR__SHM__RTPS_R52_SMP_SSW__TRCH_SSW);
         if (!rtps_shm_links[0])
             panic("RTPS_R52_SMP_SSW_SHMEM_LINK");
         if (llist_insert(&link_list, rtps_shm_links[0]))
@@ -326,16 +326,16 @@ int main ( void )
 #if CONFIG_RTPS_TRCH_SHMEM
         rtps_shm_links[0] = shmem_link_connect(
             "RTPS_R52_SPLIT_0_SSW_SHMEM_LINK",
-            RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RPLY,
-            RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RQST);
+            RTPS_DDR_ADDR__SHM__TRCH_SSW__RTPS_R52_SPLIT_0_SSW,
+            RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_0_SSW__TRCH_SSW);
         if (!rtps_shm_links[0])
             panic("RTPS_R52_SPLIT_0_SSW_SHMEM_LINK");
         if (llist_insert(&link_list, rtps_shm_links[0]))
             panic("RTPS_R52_SPLIT_0_SSW_SHMEM_LINK: llist_insert");
         rtps_shm_links[1] = shmem_link_connect(
             "RTPS_R52_SPLIT_1_SSW_SHMEM_LINK",
-            RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RPLY,
-            RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RQST);
+            RTPS_DDR_ADDR__SHM__TRCH_SSW__RTPS_R52_SPLIT_1_SSW,
+            RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_1_SSW__TRCH_SSW);
         if (!rtps_shm_links[1])
             panic("RTPS_R52_SPLIT_1_SSW_SHMEM_LINK");
         if (llist_insert(&link_list, rtps_shm_links[1]))
@@ -362,8 +362,8 @@ int main ( void )
 
 #if CONFIG_HPPS_TRCH_SHMEM
     struct link *hpps_link_shmem = shmem_link_connect("HPPS_SHMEM_LINK",
-        HPPS_SHM_ADDR__HPPS_SMP_APP__TRCH_SSW__RQST,
-        HPPS_SHM_ADDR__HPPS_SMP_APP__TRCH_SSW__RPLY);
+        HPPS_DDR_ADDR__SHM__HPPS_SMP_APP__TRCH_SSW,
+        HPPS_DDR_ADDR__SHM__TRCH_SSW__HPPS_SMP_APP);
     if (!hpps_link_shmem)
         panic("HPPS_SHMEM_LINK");
     if (llist_insert(&link_list, hpps_link_shmem))
@@ -373,8 +373,8 @@ int main ( void )
 
 #if CONFIG_HPPS_TRCH_SHMEM_SSW
     struct link *hpps_link_shmem_ssw = shmem_link_connect("HPPS_SHMEM_SSW_LINK",
-        HPPS_SHM_ADDR__HPPS_SMP_SSW__TRCH_SSW__RQST,
-        HPPS_SHM_ADDR__HPPS_SMP_SSW__TRCH_SSW__RPLY);
+        HPPS_DDR_ADDR__SHM__HPPS_SMP_SSW__TRCH_SSW,
+        HPPS_DDR_ADDR__SHM__TRCH_SSW__HPPS_SMP_SSW);
     if (!hpps_link_shmem_ssw)
         panic("HPPS_SHMEM_SSW_LINK");
     if (llist_insert(&link_list, hpps_link_shmem_ssw))
