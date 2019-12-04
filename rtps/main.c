@@ -202,13 +202,13 @@ static int main_primary(void)
     self_owner = OWNER(SW_SUBSYS_RTPS_R52_SMP, self_sw);
     trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SMP_SSW;
     trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SMP_SSW;
-    trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW__RQST;
-    trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW__RPLY;
+    trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW;
+    trch_mbox[1] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SMP_SSW;
 
     hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SMP_SSW;
     hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SMP_SSW;
-    hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SMP_SSW__RQST;
-    hpps_mbox[1] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SMP_SSW__RPLY;
+    hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SMP_SSW;
+    hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_SMP_SSW__HPPS_SMP_APP;
 #else /* !CONFIG_SMP */
 #if CONFIG_SPLIT /* same binary for either core; condition at runtime */
     switch (core) {
@@ -216,29 +216,25 @@ static int main_primary(void)
         self_owner = OWNER(SW_SUBSYS_RTPS_R52_SPLIT_0, self_sw);
         trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_0_SSW;
         trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_0_SSW;
-        trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RQST;
-        trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RPLY;
+        trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW;
+        trch_mbox[1] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_0_SSW;
 
         hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_0_SSW;
         hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_0_SSW;
-        hpps_mbox[0] =
-            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_0_SSW__RQST;
-        hpps_mbox[1] =
-            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_0_SSW__RPLY;
+        hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_0_SSW;
+        hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_SPLIT_0_SSW__HPPS_SMP_APP;
         break;
     case 1:
         self_owner = OWNER(SW_SUBSYS_RTPS_R52_SPLIT_1, self_sw);
         trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_1_SSW;
         trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_1_SSW;
-        trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RQST;
-        trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RPLY;
+        trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW;
+        trch_mbox[1] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_1_SSW;
 
         hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_1_SSW;
         hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_1_SSW;
-        hpps_mbox[0] =
-            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_1_SSW__RQST;
-        hpps_mbox[1] =
-            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_1_SSW__RPLY;
+        hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_1_SSW;
+        hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_SPLIT_1_SSW__HPPS_SMP_APP;
         break;
     default:
         panic("invalid RTPS R52 core ID");
@@ -247,15 +243,13 @@ static int main_primary(void)
     self_owner = OWNER(SW_SUBSYS_RTPS_R52_LOCKSTEP, self_sw);
     trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_LOCKSTEP_SSW;
     trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_LOCKSTEP_SSW;
-    trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RQST;
-    trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RPLY;
+    trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW;
+    trch_mbox[1] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_LOCKSTEP_SSW;
 
     hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_LOCKSTEP_SSW;
     hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_LOCKSTEP_SSW;
-    hpps_mbox[0] =
-        HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_LOCKSTEP_SSW__RQST;
-    hpps_mbox[1] =
-        HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_LOCKSTEP_SSW__RPLY;
+    hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_LOCKSTEP_SSW;
+    hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_LOCKSTEP_SSW__HPPS_SMP_APP;
 #endif /* !CONFIG_SPLIT */
 #endif /* !CONFIG_SMP */
 

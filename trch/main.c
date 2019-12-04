@@ -39,7 +39,7 @@
 
 // inferred CONFIG settings
 #define CONFIG_MBOX_DEV_HPPS (CONFIG_HPPS_TRCH_MAILBOX_SSW || CONFIG_HPPS_TRCH_MAILBOX || CONFIG_HPPS_TRCH_MAILBOX_ATF)
-#define CONFIG_MBOX_DEV_LSIO (CONFIG_RTPS_TRCH_MAILBOX)
+#define CONFIG_MBOX_DEV_LSIO (CONFIG_RTPS_TRCH_MAILBOX || CONFIG_RTPS_TRCH_MAILBOX_PSCI)
 
 // Default boot config (if not loaded from NV mem)
 static struct syscfg syscfg = {
@@ -228,38 +228,37 @@ int main ( void )
 #if CONFIG_HPPS_TRCH_MAILBOX_SSW
     struct link *hpps_link_ssw = mbox_link_connect("HPPS_MBOX_SSW_LINK",
         &mldev_hpps,
-        HPPS_MBOX0_CHAN__HPPS_SMP_SSW__TRCH_SSW__RQST,
-        HPPS_MBOX0_CHAN__HPPS_SMP_SSW__TRCH_SSW__RPLY,
+        HPPS_MBOX0_CHAN__HPPS_SMP_SSW__TRCH_SSW,
+        HPPS_MBOX0_CHAN__TRCH_SSW__HPPS_SMP_SSW,
         /* server */ self_owner,
         /* client */ OWNER(SW_SUBSYS_HPPS_SMP, SW_COMP_SSW));
     if (!hpps_link_ssw)
         panic("HPPS_MBOX_SSW_LINK");
     // Never release the link, because we listen on it in main loop
-#endif
+#endif /* CONFIG_HPPS_TRCH_MAILBOX_SSW */
 
 #if CONFIG_HPPS_TRCH_MAILBOX
     struct link *hpps_link = mbox_link_connect("HPPS_MBOX_LINK", &mldev_hpps,
-        HPPS_MBOX0_CHAN__HPPS_SMP_APP__TRCH_SSW__RQST,
-        HPPS_MBOX0_CHAN__HPPS_SMP_APP__TRCH_SSW__RPLY,
+        HPPS_MBOX0_CHAN__HPPS_SMP_APP__TRCH_SSW,
+        HPPS_MBOX0_CHAN__TRCH_SSW__HPPS_SMP_APP,
         /* server */ self_owner,
         /* client */ OWNER(SW_SUBSYS_HPPS_SMP, SW_COMP_APP));
     if (!hpps_link)
         panic("HPPS_MBOX_LINK");
     // Never release the link, because we listen on it in main loop
-#endif
+#endif /* CONFIG_HPPS_TRCH_MAILBOX */
 
 #if CONFIG_HPPS_TRCH_MAILBOX_ATF
     struct link *hpps_atf_link = mbox_link_connect("HPPS_MBOX_ATF_LINK",
-            &mldev_hpps,
-            HPPS_MBOX0_CHAN__HPPS_SMP_ATF__TRCH_SSW__RQST,
-            HPPS_MBOX0_CHAN__HPPS_SMP_ATF__TRCH_SSW__RPLY,
-            /* server */ self_owner,
-            /* client */ OWNER(SW_SUBSYS_HPPS_SMP, SW_COMP_ATF));
+        &mldev_hpps,
+        HPPS_MBOX0_CHAN__HPPS_SMP_ATF__TRCH_SSW,
+        HPPS_MBOX0_CHAN__TRCH_SSW__HPPS_SMP_ATF,
+        /* server */ self_owner,
+        /* client */ OWNER(SW_SUBSYS_HPPS_SMP, SW_COMP_ATF));
     if (!hpps_atf_link)
         panic("HPPS_MBOX_ATF_LINK");
-
     // Never release the link, because we listen on it in main loop
-#endif
+#endif /* CONFIG_HPPS_TRCH_MAILBOX_ATF */
 
     /* As many entries as maximum concurrent RTPS R52 (logical) subsystems */
     struct link *rtps_mb_links[RTPS_R52_NUM_CORES] = {0};
@@ -269,8 +268,8 @@ int main ( void )
 #if CONFIG_RTPS_TRCH_MAILBOX
         rtps_mb_links[0] = mbox_link_connect("RTPS_R52_LOCKSTEP_MBOX_LINK",
             &mldev_lsio,
-            LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RQST,
-            LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RPLY,
+            LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW,
+            LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_LOCKSTEP_SSW,
             /* server */ self_owner,
             /* client */ OWNER(SW_SUBSYS_RTPS_R52_LOCKSTEP, SW_COMP_SSW));
         if (!rtps_mb_links[0])
@@ -291,8 +290,8 @@ int main ( void )
 #if CONFIG_RTPS_TRCH_MAILBOX
         rtps_mb_links[0] = mbox_link_connect("RTPS_R52_SMP_MBOX_LINK",
             &mldev_lsio,
-            LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW__RQST,
-            LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW__RPLY,
+            LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW,
+            LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SMP_SSW,
             /* server */ self_owner,
             /* client */ OWNER(SW_SUBSYS_RTPS_R52_SMP, SW_COMP_SSW));
         if (!rtps_mb_links[0])
@@ -311,14 +310,14 @@ int main ( void )
     case SYSCFG__RTPS_MODE__SPLIT:
 #if CONFIG_RTPS_TRCH_MAILBOX
         rtps_mb_links[0] = mbox_link_connect("RTPS_R52_0_MBOX_LINK", &mldev_lsio,
-            LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RQST,
-            LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RPLY,
+            LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW,
+            LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_0_SSW,
             /* server */ self_owner,
             /* client */ OWNER(SW_SUBSYS_RTPS_R52_SPLIT_1, SW_COMP_SSW));
         if (!rtps_mb_links[0]) panic("RTPS_R52_SPLIT_0_MBOX_LINK");
         rtps_mb_links[1] = mbox_link_connect("RTPS_R52_1_MBOX_LINK", &mldev_lsio,
-            LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RQST,
-            LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RPLY,
+            LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW,
+            LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_1_SSW,
             /* server */ self_owner,
             /* client */ OWNER(SW_SUBSYS_RTPS_R52_SPLIT_1, SW_COMP_SSW));
         if (!rtps_mb_links[1])
@@ -345,19 +344,19 @@ int main ( void )
         break;
     default: panic("invalid RTPS R52 mode in syscfg");
     }
-    // Never disconnect the link, because we listen on it in main loop
+    // Never disconnect the links, because we listen on them in main loop
 
 #if CONFIG_RTPS_A53_TRCH_MAILBOX_PSCI
-    struct link *rtps_a53_psci_link =
-        mbox_link_connect("RTPS_A53_PSCI_MBOX_LINK", &mldev_lsio,
-                LSIO_MBOX0_CHAN__RTPS_A53_ATF__TRCH_SSW__RQST,
-                LSIO_MBOX0_CHAN__RTPS_A53_ATF__TRCH_SSW__RPLY,
-                /* server */ self_owner,
-                /* client */ OWNER(SW_SUBSYS_RTPS_A53, SW_COMP_ATF));
+    struct link *rtps_a53_psci_link = mbox_link_connect(
+        "RTPS_A53_PSCI_MBOX_LINK", &mldev_lsio,
+        LSIO_MBOX0_CHAN__RTPS_A53_ATF__TRCH_SSW,
+        LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_A53_ATF,
+        /* server */ self_owner,
+        /* client */ OWNER(SW_SUBSYS_RTPS_A53, SW_COMP_ATF));
     if (!rtps_a53_psci_link)
         panic("RTPS_A53_PSCI_MBOX_LINK");
     // Never disconnect the link, because we listen on it in main loop
-#endif // CONFIG_RTPS_A53_TRCH_MAILBOX_PSCI
+#endif /* CONFIG_RTPS_A53_TRCH_MAILBOX_PSCI */
 
     llist_init(&link_list);
 
