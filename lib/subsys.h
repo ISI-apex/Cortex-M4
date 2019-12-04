@@ -11,6 +11,28 @@ typedef enum { // bitmask
     NUM_SUBSYSS     = 4
 } subsys_t;
 
+enum sw_subsys { /* logical subsystem: grouping of CPU resources */
+   SW_SUBSYS_TRCH = 0,
+   SW_SUBSYS_RTPS_R52_LOCKSTEP,
+   SW_SUBSYS_RTPS_R52_SMP,
+   SW_SUBSYS_RTPS_R52_SPLIT_0,
+   SW_SUBSYS_RTPS_R52_SPLIT_1,
+   SW_SUBSYS_RTPS_A53,
+   SW_SUBSYS_HPPS_SMP,
+   SW_SUBSYS_HPPS_SMP_CL0,
+   SW_SUBSYS_HPPS_SMP_CL1,
+   NUM_SW_SUBSYS
+};
+
+enum sw_comp { /* a software component runs on a logical subsystem */
+   SW_COMP_SSW,
+   SW_COMP_ATF,
+   SW_COMP_APP,
+};
+
+/* An identifier for an entity to which a resource can be allocated */
+#define OWNER(sw_subsys, sw_comp) (((sw_subsys) << 8) | (sw_comp))
+
 typedef enum { // bitmask
 #define COMP_CPUS_SHIFT_TRCH 0
     COMP_CPU_TRCH       = 0x0001,

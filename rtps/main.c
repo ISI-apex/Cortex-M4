@@ -44,7 +44,7 @@ static struct wdt *wdt;
 
 // inferred CONFIG settings
 #define CONFIG_MBOX_DEV_HPPS (CONFIG_HPPS_RTPS_MAILBOX)
-#define CONFIG_MBOX_DEV_LSIO 0 // TODO: not currently used
+#define CONFIG_MBOX_DEV_LSIO (CONFIG_RTPS_TRCH_MAILBOX)
 
 void enable_interrupts (void)
 {
@@ -190,64 +190,116 @@ static int main_primary(void)
         panic("RTPS DMA test");
 #endif // TEST_RTPS_DMA
 
-#if TEST_RTPS_TRCH_MAILBOX
-    if (test_rtps_trch_mailbox())
-        panic("RTPS->TRCH mailbox test");
-#endif // TEST_RTPS_TRCH_MAILBOX
+    /* Resources are allocated per an "owner" (i.e. a SW entity), and this
+     * code runs in the context of one of several different entities. */
+    enum sw_comp self_sw = SW_COMP_SSW;
+    unsigned self_owner;
+    unsigned trch_mbox[2], hpps_mbox[2];
+    unsigned trch_mbox_ev[2], hpps_mbox_ev[2];
+#if CONFIG_SMP
+    /* Note that in SMP mode, the app uses one mailbox; synchronization
+     * among the cores is up to the software (we only run stuff on primary). */
+    self_owner = OWNER(SW_SUBSYS_RTPS_R52_SMP, self_sw);
+    trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SMP_SSW;
+    trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SMP_SSW;
+    trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW__RQST;
+    trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW__RPLY;
 
-#if CONFIG_RTPS_TRCH_MAILBOX
-#define LSIO_RCV_IRQ_IDX  MBOX_LSIO__RTPS_RCV_INT
-#define LSIO_ACK_IRQ_IDX  MBOX_LSIO__RTPS_ACK_INT
+    hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SMP_SSW;
+    hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SMP_SSW;
+    hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SMP_SSW__RQST;
+    hpps_mbox[1] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SMP_SSW__RPLY;
+#else /* !CONFIG_SMP */
+#if CONFIG_SPLIT /* same binary for either core; condition at runtime */
+    switch (core) {
+    case 0:
+        self_owner = OWNER(SW_SUBSYS_RTPS_R52_SPLIT_0, self_sw);
+        trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_0_SSW;
+        trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_0_SSW;
+        trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RQST;
+        trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW__RPLY;
+
+        hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_0_SSW;
+        hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_0_SSW;
+        hpps_mbox[0] =
+            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_0_SSW__RQST;
+        hpps_mbox[1] =
+            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_0_SSW__RPLY;
+        break;
+    case 1:
+        self_owner = OWNER(SW_SUBSYS_RTPS_R52_SPLIT_1, self_sw);
+        trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_1_SSW;
+        trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_1_SSW;
+        trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RQST;
+        trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RPLY;
+
+        hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_1_SSW;
+        hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_1_SSW;
+        hpps_mbox[0] =
+            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_1_SSW__RQST;
+        hpps_mbox[1] =
+            HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_1_SSW__RPLY;
+        break;
+    default:
+        panic("invalid RTPS R52 core ID");
+    }
+#else /* !CONFIG_SPLIT */
+    self_owner = OWNER(SW_SUBSYS_RTPS_R52_LOCKSTEP, self_sw);
+    trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_LOCKSTEP_SSW;
+    trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_LOCKSTEP_SSW;
+    trch_mbox[0] = LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RQST;
+    trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW__RPLY;
+
+    hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_LOCKSTEP_SSW;
+    hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_LOCKSTEP_SSW;
+    hpps_mbox[0] =
+        HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_LOCKSTEP_SSW__RQST;
+    hpps_mbox[1] =
+        HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_LOCKSTEP_SSW__RPLY;
+#endif /* !CONFIG_SPLIT */
+#endif /* !CONFIG_SMP */
+
+#ifdef CONFIG_MBOX_DEV_LSIO
     struct mbox_link_dev mldev_trch;
     mldev_trch.base = MBOX_LSIO__BASE;
-    mldev_trch.rcv_irq = gic_request(RTPS_IRQ__TR_MBOX_0 + LSIO_RCV_IRQ_IDX,
-                               GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_trch.rcv_int_idx = LSIO_RCV_IRQ_IDX;
-    mldev_trch.ack_irq = gic_request(RTPS_IRQ__TR_MBOX_0 + LSIO_ACK_IRQ_IDX,
-                               GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_trch.ack_int_idx = LSIO_ACK_IRQ_IDX;
+    mldev_trch.rcv_irq = gic_request(RTPS_IRQ__TR_MBOX_0 + trch_mbox_ev[0],
+            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
+    mldev_trch.rcv_int_idx = trch_mbox_ev[0];
+    mldev_trch.ack_irq = gic_request(RTPS_IRQ__TR_MBOX_0 + trch_mbox_ev[1],
+            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
+    mldev_trch.ack_int_idx = trch_mbox_ev[1];
+#endif /* CONFIG_MBOX_DEV_LSIO */
 
-    struct link *trch_link;
-    switch (core) {
-        case 0:
-            trch_link = mbox_link_connect("RTPS_TRCH_MBOX_LINK",
-                &mldev_trch,
-                MBOX_LSIO__TRCH_RTPS_R52_0, MBOX_LSIO__RTPS_R52_0_TRCH,
-                /* server */ 0, /* client */ MASTER_ID_RTPS_CPU0);
-            break;
-        case 1:
-            trch_link = mbox_link_connect("RTPS_TRCH_MBOX_LINK",
-                &mldev_trch,
-                MBOX_LSIO__TRCH_RTPS_R52_1, MBOX_LSIO__RTPS_R52_1_TRCH,
-                /* server */ 0, /* client */ MASTER_ID_RTPS_CPU1);
-            break;
-        default:
-            panic("invalid RTPS R52 core ID");
-    }
+#if CONFIG_RTPS_TRCH_MAILBOX
+    struct link *trch_link = mbox_link_connect("TRCH_MBOX_LINK", &mldev_trch,
+        trch_mbox[0], trch_mbox[1], /* server */ 0, /* client */ self_owner);
     if (!trch_link)
         panic("RTPS->TRCH mailbox");
+
+#if TEST_RTPS_TRCH_MAILBOX
+    if (test_rtps_trch_mailbox(trch_link))
+        panic("RTPS->TRCH mailbox test");
+#endif // TEST_RTPS_TRCH_MAILBOX
 #endif /* CONFIG_RTPS_TRCH_MAILBOX */
 
 #if CONFIG_MBOX_DEV_HPPS
     struct mbox_link_dev mldev_hpps;
     mldev_hpps.base = MBOX_HPPS_RTPS__BASE;
-    mldev_hpps.rcv_irq =
-        gic_request(RTPS_IRQ__HR_MBOX_0 + MBOX_HPPS_RTPS__RTPS_RCV_INT,
-                    GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_hpps.rcv_int_idx = MBOX_HPPS_RTPS__RTPS_RCV_INT;
-    mldev_hpps.ack_irq =
-        gic_request(RTPS_IRQ__HR_MBOX_0 + MBOX_HPPS_RTPS__RTPS_ACK_INT,
-                    GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_hpps.ack_int_idx = MBOX_HPPS_RTPS__RTPS_ACK_INT;
+    mldev_hpps.rcv_irq = gic_request(RTPS_IRQ__HR_MBOX_0 + hpps_mbox_ev[0],
+            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
+    mldev_hpps.rcv_int_idx = hpps_mbox_ev[0];
+    mldev_hpps.ack_irq = gic_request(RTPS_IRQ__HR_MBOX_0 + hpps_mbox_ev[1],
+            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
+    mldev_hpps.ack_int_idx = hpps_mbox_ev[1];
     mbox_link_dev_add(MBOX_DEV_HPPS, &mldev_hpps);
-#endif
+#endif /* CONFIG_MBOX_DEV_HPPS */
 
 #if CONFIG_HPPS_RTPS_MAILBOX
-    struct link *hpps_link = mbox_link_connect("HPPS_MBOX_LINK", &mldev_hpps,
-                    MBOX_HPPS_RTPS__HPPS_RTPS, MBOX_HPPS_RTPS__RTPS_HPPS,
-                    /* server */ MASTER_ID_RTPS_CPU0,
-                    /* client */ MASTER_ID_HPPS_CPU0);
-    if (!hpps_link)
+    struct link *hpps_smp_app_link = mbox_link_connect("HPPS_SMP_APP_MBOX_LINK",
+        &mldev_hpps, hpps_mbox[0], hpps_mbox[1],
+        /* server */ self_owner,
+        /* client */ OWNER(SW_SUBSYS_HPPS_SMP, SW_COMP_APP));
+    if (!hpps_smp_app_link)
         panic("HPPS link");
     // Never release the link, because we listen on it in main loop
 #endif // CONFIG_HPPS_RTPS_MAILBOX
@@ -367,34 +419,99 @@ void irq_handler(unsigned intid) {
         unsigned irq = intid - GIC_INTERNAL;
         DPRINTF("IRQ #%u\r\n", irq);
         switch (irq) {
-            // Only register the ISRs for mailbox ints that are used (see mailbox-map.h)
-            // NOTE: we multiplex all mboxes (in one IP block) onto one pair of IRQs
+        /* Register the ISRs only for mailbox ints used (see mailbox-map.h) */
+        /* We multiplex all mboxes (in one IP block) onto one pair of IRQs. */
 #if CONFIG_HPPS_RTPS_MAILBOX
-            case RTPS_IRQ__HR_MBOX_0 + MBOX_HPPS_RTPS__RTPS_RCV_INT:
-                    mbox_rcv_isr(MBOX_HPPS_RTPS__RTPS_RCV_INT);
-                    break;
-            case RTPS_IRQ__HR_MBOX_0 + MBOX_HPPS_RTPS__RTPS_ACK_INT:
-                    mbox_ack_isr(MBOX_HPPS_RTPS__RTPS_ACK_INT);
-                    break;
+
+/* This BM can run on any logical subsystem, but only SMP is compile-time. */
+#if CONFIG_SMP
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT0__RTPS_R52_SMP_SSW:
+            mbox_rcv_isr(HPPS_MBOX1_INT_EVT0__RTPS_R52_SMP_SSW);
+            break;
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT1__RTPS_R52_SMP_SSW:
+            mbox_ack_isr(HPPS_MBOX1_INT_EVT1__RTPS_R52_SMP_SSW);
+            break;
+#else /* !CONFIG_SMP */
+#if CONFIG_SPLIT /* same BM binary must support either core  */
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_0_SSW:
+            mbox_rcv_isr(HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_0_SSW);
+            break;
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_0_SSW:
+            mbox_ack_isr(HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_0_SSW);
+            break;
+#if HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_1_SSW != \
+    HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_0_SSW
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_1_SSW:
+            mbox_rcv_isr(HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_1_SSW);
+            break;
+#endif
+#if HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_1_SSW != \
+    HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_0_SSW
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_1_SSW:
+            mbox_ack_isr(HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_1_SSW);
+            break;
+#endif
+#else /* !CONFIG_SPLIT ==> LOCKSTEP */
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT0__RTPS_R52_LOCKSTEP_SSW:
+            mbox_rcv_isr(HPPS_MBOX1_INT_EVT0__RTPS_R52_LOCKSTEP_SSW);
+            break;
+        case RTPS_IRQ__HR_MBOX_0 + HPPS_MBOX1_INT_EVT1__RTPS_R52_LOCKSTEP_SSW:
+            mbox_ack_isr(HPPS_MBOX1_INT_EVT1__RTPS_R52_LOCKSTEP_SSW);
+            break;
+#endif /* !CONFIG_SPLIT ==> LOCKSTEP */
+#endif /* !CONFIG_SMP */
 #endif // CONFIG_HPPS_RTPS_MAILBOX
+
 #if CONFIG_RTPS_TRCH_MAILBOX || TEST_RTPS_TRCH_MAILBOX
-            case RTPS_IRQ__TR_MBOX_0 + MBOX_LSIO__RTPS_RCV_INT:
-                    mbox_rcv_isr(MBOX_LSIO__RTPS_RCV_INT);
-                    break;
-            case RTPS_IRQ__TR_MBOX_0 + MBOX_LSIO__RTPS_ACK_INT:
-                    mbox_ack_isr(MBOX_LSIO__RTPS_ACK_INT);
-                    break;
+
+#if CONFIG_SMP
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT0__RTPS_R52_SMP_SSW:
+            mbox_rcv_isr(LSIO_MBOX0_INT_EVT0__RTPS_R52_SMP_SSW);
+            break;
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT1__RTPS_R52_SMP_SSW:
+            mbox_ack_isr(LSIO_MBOX0_INT_EVT1__RTPS_R52_SMP_SSW);
+            break;
+#else /* !CONFIG_SMP */
+#if CONFIG_SPLIT /* same BM binary must support either core  */
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_0_SSW:
+            mbox_rcv_isr(LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_0_SSW);
+            break;
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_0_SSW:
+            mbox_ack_isr(LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_0_SSW);
+            break;
+#if LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_1_SSW != \
+    LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_0_SSW
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_1_SSW:
+            mbox_rcv_isr(LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_1_SSW);
+            break;
+#endif
+#if LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_1_SSW != \
+    LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_0_SSW
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_1_SSW:
+            mbox_ack_isr(LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_1_SSW);
+            break;
+#endif
+#else /* !CONFIG_SPLIT ==> LOCKSTEP */
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT0__RTPS_R52_LOCKSTEP_SSW:
+            mbox_rcv_isr(LSIO_MBOX0_INT_EVT0__RTPS_R52_LOCKSTEP_SSW);
+            break;
+        case RTPS_IRQ__TR_MBOX_0 + LSIO_MBOX0_INT_EVT1__RTPS_R52_LOCKSTEP_SSW:
+            mbox_ack_isr(LSIO_MBOX0_INT_EVT1__RTPS_R52_LOCKSTEP_SSW);
+            break;
+#endif /* !CONFIG_SPLIT ==> LOCKSTEP */
+#endif /* !CONFIG_SMP */
 #endif /* CONFIG_RTPS_TRCH_MAILBOX || TEST_RTPS_TRCH_MAILBOX */
+
 #if TEST_RTPS_DMA
             case RTPS_IRQ__RTPS_DMA_ABORT:
-                    dma_abort_isr(rtps_dma);
-                    break;
+                dma_abort_isr(rtps_dma);
+                break;
             case RTPS_IRQ__RTPS_DMA_EV0:
-                    dma_event_isr(rtps_dma, 0);
-                    break;
+                dma_event_isr(rtps_dma, 0);
+                break;
 #endif
             default:
-                    printf("WARN: no ISR for IRQ #%u\r\n", irq);
+                printf("WARN: no ISR for IRQ #%u\r\n", irq);
         }
     }
 }

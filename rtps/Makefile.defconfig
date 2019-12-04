@@ -16,6 +16,7 @@ CONFIG_EL2					?= 0
 CONFIG_GTIMER 				?= 1
 CONFIG_SLEEP_TIMER 			?= 1 # implement sleep() using a timer
 CONFIG_SMP  				?= 0
+CONFIG_SPLIT				?= 0
 CONFIG_WDT 					?= 1
 CONFIG_RTPS_TRCH_MAILBOX  	?= 1
 CONFIG_HPPS_RTPS_MAILBOX  	?= 1

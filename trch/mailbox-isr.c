@@ -5,17 +5,17 @@
 
 void mbox_lsio_rcv_isr()
 {
-    mbox_rcv_isr(MBOX_LSIO__TRCH_RCV_INT);
+    mbox_rcv_isr(LSIO_MBOX0_INT_EVT0__TRCH_SSW);
 }
 void mbox_lsio_ack_isr()
 {
-    mbox_ack_isr(MBOX_LSIO__TRCH_ACK_INT);
+    mbox_ack_isr(LSIO_MBOX0_INT_EVT1__TRCH_SSW);
 }
 void mbox_hpps_rcv_isr()
 {
-    mbox_rcv_isr(MBOX_HPPS_TRCH__TRCH_RCV_INT);
+    mbox_rcv_isr(HPPS_MBOX0_INT_EVT0__TRCH_SSW);
 }
 void mbox_hpps_ack_isr()
 {
-    mbox_ack_isr(MBOX_HPPS_TRCH__TRCH_ACK_INT);
+    mbox_ack_isr(HPPS_MBOX0_INT_EVT1__TRCH_SSW);
 }

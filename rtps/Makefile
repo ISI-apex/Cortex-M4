@@ -29,6 +29,7 @@ CONFIG_FLAGS = \
 	CONFIG_GTIMER \
 	CONFIG_SLEEP_TIMER \
 	CONFIG_SMP \
+	CONFIG_SPLIT \
 	CONFIG_WDT \
 	CONFIG_RTPS_TRCH_MAILBOX \
 	CONFIG_HPPS_RTPS_MAILBOX \
@@ -130,6 +131,12 @@ endif
 ifeq ($(strip $(CONFIG_SMP)),1)
 ifneq ($(strip $(CONFIG_RTPS_TRCH_MAILBOX)),1)
 $(error CONFIG_SMP requires CONFIG_RTPS_TRCH_MAILBOX for power management)
+endif
+endif
+
+ifeq ($(strip $(TEST_RTPS_TRCH_MAILBOX)),1)
+ifneq ($(strip $(CONFIG_RTPS_TRCH_MAILBOX)),1)
+$(error TEST_RTPS_TRCH_MAILBOX requires CONFIG_RTPS_TRCH_MAILBOX)
 endif
 endif
 
