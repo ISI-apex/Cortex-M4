@@ -15,7 +15,26 @@
 // SW: the software component on SRC/DEST subsystem (enum sw_comp in susbys.h)
 // DIR: [RQST, RPLY] - directon of communication (TODO: rename without RPC)
 
-// Shared memory regions accessible to RTPS
+// TODO: Update remaining macros to use the naming convention
+
+//////////
+// RTPS //
+//////////
+
+// Page tables for RTPS MMU: in RPTS DRAM
+#define RTPS_PT_ADDR 0x40060000
+#define RTPS_PT_SIZE   0x200000
+
+// DMA Microcode buffer: in RTPS DRAM (cannot be in TCM)
+#define RTPS_DMA_MCODE_ADDR 0x40050000
+#define RTPS_DMA_MCODE_SIZE 0x00001000
+
+// Buffers for DMA test: in RTPS DRAM
+#define RTPS_DMA_SRC_ADDR       0x40051000
+#define RTPS_DMA_SIZE           0x00000200
+#define RTPS_DMA_DST_ADDR       0x40052000 // align to page
+#define RTPS_DMA_DST_REMAP_ADDR 0x40053000 // MMU test maps this to DST_ADDR
+
 /* Allocations can overlap for subsystems that cannot run concurrently. */
 /* Note: SMP OS uses one region -- synchronization up to the SW */
 #define RTPS_DDR_ADDR__SHM__RTPS_R52_LOCKSTEP			  0x40260000
@@ -27,7 +46,6 @@
 #define RTPS_DDR_ADDR__SHM__RTPS_R52_SMP			  0x40260000
 #define RTPS_DDR_SIZE__SHM__RTPS_R52_SMP			  0x00040000
 
-// Shared memory regions accessible to RTPS
 /* TODO: make links bidirectional; replace a pair with single allocation here */
 // TRCH client -> RTPS LOCKSTEP server
 #define RTPS_DDR_ADDR__SHM__TRCH_SSW__RTPS_R52_LOCKSTEP_SSW__RQST 0x40260000
@@ -70,7 +88,7 @@
 #define RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RPLY  0x40298000
 #define RTPS_DDR_SIZE__SHM__RTPS_R52_SPLIT_1_SSW__TRCH_SSW__RPLY  0x00008000
 
-// Shared memory regions accessible to RTPS, reserved but not all ocated
+// Shared memory regions accessible to RTPS, reserved but not allocated
 #define RTPS_DDR_ADDR__SHM__RTPS_R52_LOCKSTEP__FREE		  0x40280000
 #define RTPS_DDR_SIZE__SHM__RTPS_R52_LOCKSTEP__FREE		  0x00020000
 #define RTPS_DDR_ADDR__SHM__RTPS_R52_SPLIT_0__FREE		  0x402a0000
@@ -80,37 +98,9 @@
 #define RTPS_DDR_ADDR__SHM__RTPS_R52_SMP__FREE			  0x40280000
 #define RTPS_DDR_SIZE__SHM__RTPS_R52_SMP__FREE			  0x00020000
 
-// Full HPPS DRAM
-#define HPPS_DDR_LOW_ADDR__HPPS_SMP				  0x80000000
-#define HPPS_DDR_LOW_SIZE__HPPS_SMP				  0x40000000
-
-// Shared memory regions accessible to HPPS
-#define HPPS_SHM_ADDR__HPPS_SMP					  0x87600000
-#define HPPS_SHM_SIZE__HPPS_SMP					  0x00400000
-
-// Shared memory regions for userspace
-#define HPPS_SHM_ADDR__HPPS_SMP_APP__TRCH_SSW__RQST		  0x87600000
-#define HPPS_SHM_SIZE__HPPS_SMP_APP__TRCH_SSW__RQST    		     0x10000
-#define HPPS_SHM_ADDR__HPPS_SMP_APP__TRCH_SSW__RPLY 		  0x87610000
-#define HPPS_SHM_SIZE__HPPS_SMP_APP__TRCH_SSW__RPLY     	     0x10000
-
-// Shared memory regions for SSW
-#define HPPS_SHM_ADDR__HPPS_SMP_SSW__TRCH_SSW__RQST		  0x879f0000
-#define HPPS_SHM_SIZE__HPPS_SMP_SSW__TRCH_SSW__RQST    		     0x08000
-#define HPPS_SHM_ADDR__HPPS_SMP_SSW__TRCH_SSW__RPLY 		  0x879f8000
-#define HPPS_SHM_SIZE__HPPS_SMP_SSW__TRCH_SSW__RPLY    		     0x08000
-
-// TODO: Update remaining macros to use the naming convention
-
-// Page table should be in memory that is on a bus accessible from the MMUs
-// master port ('dma' prop in MMU node in Qemu DT).  We put it in HPPS DRAM,
-// because that seems to be the only option, judging from high-level Chiplet
-// diagram.
-#define RTPS_HPPS_PT_ADDR                0x87e00000
-#define RTPS_HPPS_PT_SIZE                  0x1ff000
-
-#define RT_MMU_TEST_DATA_LO_ADDR         0x87fff000
-#define RT_MMU_TEST_DATA_LO_SIZE           0x001000
+//////////
+// HPPS //
+//////////
 
 #define WINDOWS_TO_40BIT_ADDR            0xc0000000
 #define WINDOWS_TO_40BIT_SIZE            0x20000000
@@ -124,18 +114,34 @@
 #define RT_MMU_TEST_DATA_HI_1_ADDR      0x100010000
 #define RT_MMU_TEST_DATA_HI_SIZE            0x10000
 
-// Page tables for RTPS MMU: in RPTS DRAM
-#define RTPS_PT_ADDR 0x40060000
-#define RTPS_PT_SIZE   0x200000
+// Page table should be in memory that is on a bus accessible from the MMUs
+// master port ('dma' prop in MMU node in Qemu DT).  We put it in HPPS DRAM,
+// because that seems to be the only option, judging from high-level Chiplet
+// diagram.
+#define RTPS_HPPS_PT_ADDR                0x87e00000
+#define RTPS_HPPS_PT_SIZE                  0x1ff000
 
-// DMA Microcode buffer: in RTPS DRAM (cannot be in TCM)
-#define RTPS_DMA_MCODE_ADDR 0x40050000
-#define RTPS_DMA_MCODE_SIZE 0x00001000
+#define RT_MMU_TEST_DATA_LO_ADDR         0x87fff000
+#define RT_MMU_TEST_DATA_LO_SIZE           0x001000
 
-// Buffers for DMA test: in RTPS DRAM
-#define RTPS_DMA_SRC_ADDR       0x40051000
-#define RTPS_DMA_SIZE           0x00000200
-#define RTPS_DMA_DST_ADDR       0x40052000 // align to page
-#define RTPS_DMA_DST_REMAP_ADDR 0x40053000 // MMU test maps this to DST_ADDR
+// Full HPPS DRAM
+#define HPPS_DDR_LOW_ADDR__HPPS_SMP				  0x80000000
+#define HPPS_DDR_LOW_SIZE__HPPS_SMP				  0x40000000
+
+// Shared memory regions accessible to HPPS
+#define HPPS_SHM_ADDR__HPPS_SMP					  0x87600000
+#define HPPS_SHM_SIZE__HPPS_SMP					  0x00400000
+
+// HPPS userspace client -> TRCH server
+#define HPPS_SHM_ADDR__HPPS_SMP_APP__TRCH_SSW__RQST		  0x87600000
+#define HPPS_SHM_SIZE__HPPS_SMP_APP__TRCH_SSW__RQST    		     0x10000
+#define HPPS_SHM_ADDR__HPPS_SMP_APP__TRCH_SSW__RPLY 		  0x87610000
+#define HPPS_SHM_SIZE__HPPS_SMP_APP__TRCH_SSW__RPLY     	     0x10000
+
+// HPPS SSW client -> TRCH server
+#define HPPS_SHM_ADDR__HPPS_SMP_SSW__TRCH_SSW__RQST		  0x879f0000
+#define HPPS_SHM_SIZE__HPPS_SMP_SSW__TRCH_SSW__RQST    		     0x08000
+#define HPPS_SHM_ADDR__HPPS_SMP_SSW__TRCH_SSW__RPLY 		  0x879f8000
+#define HPPS_SHM_SIZE__HPPS_SMP_SSW__TRCH_SSW__RPLY    		     0x08000
 
 #endif // MEM_MAP_H
