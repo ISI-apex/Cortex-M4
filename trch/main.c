@@ -198,6 +198,8 @@ int main ( void )
         panic("RTPS/TRCH-HPPS MMU test");
 #endif // TEST_RT_MMU
 
+    llist_init(&link_list);
+
 #if CONFIG_MBOX_DEV_HPPS
     struct mbox_link_dev mldev_hpps;
     mldev_hpps.base = MBOX_HPPS_TRCH__BASE;
@@ -357,8 +359,6 @@ int main ( void )
         panic("RTPS_A53_PSCI_MBOX_LINK");
     // Never disconnect the link, because we listen on it in main loop
 #endif /* CONFIG_RTPS_A53_TRCH_MAILBOX_PSCI */
-
-    llist_init(&link_list);
 
 #if CONFIG_HPPS_TRCH_SHMEM
     struct link *hpps_link_shmem = shmem_link_connect("HPPS_SHMEM_LINK",
