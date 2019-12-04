@@ -15,7 +15,7 @@ int test_shmem()
     size_t sz;
     int ret = 0;
     uint32_t status;
-    struct shmem *shm = shmem_open(shmem_reg);
+    struct shmem *shm = shmem_open((uintptr_t)shmem_reg);
     if (!shm)
         return 1;
     // no flags should be set at this point

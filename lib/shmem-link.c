@@ -108,8 +108,8 @@ static int shmem_link_request(struct link *link,
     return rc;
 }
 
-struct link *shmem_link_connect(const char *name, volatile void *addr_out,
-                                volatile void *addr_in)
+struct link *shmem_link_connect(const char *name, uintptr_t addr_out,
+                                uintptr_t addr_in)
 {
     struct shmem_link *slink;
     struct link *link;

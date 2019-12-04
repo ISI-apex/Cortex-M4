@@ -17,7 +17,7 @@ static struct shmem shmems[MAX_SHMEMS] = {0};
 
 #define IS_ALIGNED(p) (((uintptr_t)(const void *)(p) % sizeof(uint32_t)) == 0)
 
-struct shmem *shmem_open(volatile void *addr)
+struct shmem *shmem_open(uintptr_t addr)
 {
     struct shmem *s = OBJECT_ALLOC(shmems);
     ASSERT(IS_ALIGNED(addr));
