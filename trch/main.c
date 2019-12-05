@@ -263,8 +263,12 @@ int main ( void )
 #endif /* CONFIG_HPPS_TRCH_MAILBOX_ATF */
 
     /* As many entries as maximum concurrent RTPS R52 (logical) subsystems */
+#if CONFIG_RTPS_TRCH_MAILBOX
     struct link *rtps_mb_links[RTPS_R52_NUM_CORES] = {0};
+#endif /* CONFIG_RTPS_TRCH_MAILBOX */
+#if CONFIG_RTPS_TRCH_SHMEM
     struct link *rtps_shm_links[RTPS_R52_NUM_CORES] = {0};
+#endif /* CONFIG_RTPS_TRCH_SHMEM */
     switch (syscfg.rtps_mode) {
     case SYSCFG__RTPS_MODE__LOCKSTEP:
 #if CONFIG_RTPS_TRCH_MAILBOX
@@ -316,8 +320,10 @@ int main ( void )
             LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_0_SSW,
             /* server */ self_owner,
             /* client */ OWNER(SW_SUBSYS_RTPS_R52_SPLIT_1, SW_COMP_SSW));
-        if (!rtps_mb_links[0]) panic("RTPS_R52_SPLIT_0_MBOX_LINK");
-        rtps_mb_links[1] = mbox_link_connect("RTPS_R52_1_MBOX_LINK", &mldev_lsio,
+        if (!rtps_mb_links[0])
+            panic("RTPS_R52_SPLIT_0_MBOX_LINK");
+        rtps_mb_links[1] = mbox_link_connect("RTPS_R52_1_MBOX_LINK",
+            &mldev_lsio,
             LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW,
             LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_1_SSW,
             /* server */ self_owner,
