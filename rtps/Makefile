@@ -87,6 +87,7 @@ OBJS = \
 	lib/printf.o \
 	lib/psci.o \
 	lib/sleep.o \
+	links.o \
 	main.o \
 	server.o \
 

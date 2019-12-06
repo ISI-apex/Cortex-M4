@@ -12,9 +12,9 @@
 #include "gtimer.h"
 #include "hwinfo.h"
 #include "intc.h"
-#include "mailbox-link.h"
-#include "mailbox-map.h"
+#include "links.h"
 #include "mailbox.h"
+#include "mailbox-map.h"
 #include "panic.h"
 #include "console.h"
 #include "rti-timer.h"
@@ -41,10 +41,6 @@ static struct dma *rtps_dma;
 #if CONFIG_WDT || TEST_WDT
 static struct wdt *wdt;
 #endif // {CONFIG,TEST}_WDT
-
-// inferred CONFIG settings
-#define CONFIG_MBOX_DEV_HPPS (CONFIG_HPPS_RTPS_MAILBOX)
-#define CONFIG_MBOX_DEV_LSIO (CONFIG_RTPS_TRCH_MAILBOX)
 
 void enable_interrupts (void)
 {
@@ -173,114 +169,6 @@ static int main_primary(void)
         panic("RTPS DMA test");
 #endif // TEST_RTPS_DMA
 
-    /* Resources are allocated per an "owner" (i.e. a SW entity), and this
-     * code runs in the context of one of several different entities. */
-    enum sw_comp self_sw = SW_COMP_SSW;
-    unsigned self_owner;
-    unsigned trch_mbox[2], hpps_mbox[2]; /* {incoming, outgoing} */
-    unsigned trch_mbox_ev[2], hpps_mbox_ev[2]; /* {rcv, ack} */
-#if CONFIG_SMP
-    /* Note that in SMP mode, the app uses one mailbox; synchronization
-     * among the cores is up to the software (we only run stuff on primary). */
-    self_owner = OWNER(SW_SUBSYS_RTPS_R52_SMP, self_sw);
-    trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SMP_SSW;
-    trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SMP_SSW;
-    trch_mbox[0] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SMP_SSW;
-    trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SMP_SSW__TRCH_SSW;
-
-    hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SMP_SSW;
-    hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SMP_SSW;
-    hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SMP_SSW;
-    hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_SMP_SSW__HPPS_SMP_APP;
-#else /* !CONFIG_SMP */
-#if CONFIG_SPLIT /* same binary for either core; condition at runtime */
-    switch (core) {
-    case 0:
-        self_owner = OWNER(SW_SUBSYS_RTPS_R52_SPLIT_0, self_sw);
-        trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_0_SSW;
-        trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_0_SSW;
-        trch_mbox[0] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_0_SSW;
-        trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_0_SSW__TRCH_SSW;
-
-        hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_0_SSW;
-        hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_0_SSW;
-        hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_0_SSW;
-        hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_SPLIT_0_SSW__HPPS_SMP_APP;
-        break;
-    case 1:
-        self_owner = OWNER(SW_SUBSYS_RTPS_R52_SPLIT_1, self_sw);
-        trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_SPLIT_1_SSW;
-        trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_SPLIT_1_SSW;
-        trch_mbox[0] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_SPLIT_1_SSW;
-        trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_SPLIT_1_SSW__TRCH_SSW;
-
-        hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_SPLIT_1_SSW;
-        hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_SPLIT_1_SSW;
-        hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_SPLIT_1_SSW;
-        hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_SPLIT_1_SSW__HPPS_SMP_APP;
-        break;
-    default:
-        panic("invalid RTPS R52 core ID");
-    }
-#else /* !CONFIG_SPLIT */
-    self_owner = OWNER(SW_SUBSYS_RTPS_R52_LOCKSTEP, self_sw);
-    trch_mbox_ev[0] = LSIO_MBOX0_INT_EVT0__RTPS_R52_LOCKSTEP_SSW;
-    trch_mbox_ev[1] = LSIO_MBOX0_INT_EVT1__RTPS_R52_LOCKSTEP_SSW;
-    trch_mbox[0] = LSIO_MBOX0_CHAN__TRCH_SSW__RTPS_R52_LOCKSTEP_SSW;
-    trch_mbox[1] = LSIO_MBOX0_CHAN__RTPS_R52_LOCKSTEP_SSW__TRCH_SSW;
-
-    hpps_mbox_ev[0] = HPPS_MBOX1_INT_EVT0__RTPS_R52_LOCKSTEP_SSW;
-    hpps_mbox_ev[1] = HPPS_MBOX1_INT_EVT1__RTPS_R52_LOCKSTEP_SSW;
-    hpps_mbox[0] = HPPS_MBOX1_CHAN__HPPS_SMP_APP__RTPS_R52_LOCKSTEP_SSW;
-    hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_LOCKSTEP_SSW__HPPS_SMP_APP;
-#endif /* !CONFIG_SPLIT */
-#endif /* !CONFIG_SMP */
-
-#ifdef CONFIG_MBOX_DEV_LSIO
-    struct mbox_link_dev mldev_trch;
-    mldev_trch.base = MBOX_LSIO__BASE;
-    mldev_trch.rcv_irq = gic_request(RTPS_IRQ__TR_MBOX_0 + trch_mbox_ev[0],
-            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_trch.rcv_int_idx = trch_mbox_ev[0];
-    mldev_trch.ack_irq = gic_request(RTPS_IRQ__TR_MBOX_0 + trch_mbox_ev[1],
-            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_trch.ack_int_idx = trch_mbox_ev[1];
-#endif /* CONFIG_MBOX_DEV_LSIO */
-
-#if CONFIG_RTPS_TRCH_MAILBOX
-    struct link *trch_link = mbox_link_connect("TRCH_MBOX_LINK", &mldev_trch,
-        trch_mbox[0], trch_mbox[1], /* server */ 0, /* client */ self_owner);
-    if (!trch_link)
-        panic("RTPS->TRCH mailbox");
-
-#if TEST_RTPS_TRCH_MAILBOX
-    if (test_rtps_trch_mailbox(trch_link))
-        panic("RTPS->TRCH mailbox test");
-#endif // TEST_RTPS_TRCH_MAILBOX
-#endif /* CONFIG_RTPS_TRCH_MAILBOX */
-
-#if CONFIG_MBOX_DEV_HPPS
-    struct mbox_link_dev mldev_hpps;
-    mldev_hpps.base = MBOX_HPPS_RTPS__BASE;
-    mldev_hpps.rcv_irq = gic_request(RTPS_IRQ__HR_MBOX_0 + hpps_mbox_ev[0],
-            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_hpps.rcv_int_idx = hpps_mbox_ev[0];
-    mldev_hpps.ack_irq = gic_request(RTPS_IRQ__HR_MBOX_0 + hpps_mbox_ev[1],
-            GIC_IRQ_TYPE_SPI, GIC_IRQ_CFG_LEVEL);
-    mldev_hpps.ack_int_idx = hpps_mbox_ev[1];
-    mbox_link_dev_add(MBOX_DEV_HPPS, &mldev_hpps);
-#endif /* CONFIG_MBOX_DEV_HPPS */
-
-#if CONFIG_HPPS_RTPS_MAILBOX
-    struct link *hpps_smp_app_link = mbox_link_connect("HPPS_SMP_APP_MBOX_LINK",
-        &mldev_hpps, hpps_mbox[0], hpps_mbox[1],
-        /* server */ self_owner,
-        /* client */ OWNER(SW_SUBSYS_HPPS_SMP, SW_COMP_APP));
-    if (!hpps_smp_app_link)
-        panic("HPPS link");
-    // Never release the link, because we listen on it in main loop
-#endif // CONFIG_HPPS_RTPS_MAILBOX
-
 #if TEST_SOFT_RESET
     printf("Resetting...\r\n");
     /* this will generate "Undefined Instruction exception because HRMR is accessible only at EL2 */
@@ -299,6 +187,12 @@ static int main_primary(void)
 #endif // CONFIG_WDT
 
     cmd_handler_register(server_process);
+    links_init();
+
+#if TEST_RTPS_TRCH_MAILBOX
+    if (test_rtps_trch_mailbox(links_get_trch_mbox_link()))
+        panic("RTPS->TRCH mailbox test");
+#endif // TEST_RTPS_TRCH_MAILBOX
 
 #if CONFIG_SMP
     int rc = bringup_secondary_cores(trch_link);
