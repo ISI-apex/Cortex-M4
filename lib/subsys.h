@@ -12,7 +12,7 @@ typedef enum { // bitmask
 } subsys_t;
 
 enum sw_subsys { /* logical subsystem: grouping of CPU resources */
-   SW_SUBSYS_TRCH = 0,
+   SW_SUBSYS_TRCH = 1,
    SW_SUBSYS_RTPS_R52_LOCKSTEP,
    SW_SUBSYS_RTPS_R52_SMP,
    SW_SUBSYS_RTPS_R52_SPLIT_0,
@@ -25,9 +25,10 @@ enum sw_subsys { /* logical subsystem: grouping of CPU resources */
 };
 
 enum sw_comp { /* a software component runs on a logical subsystem */
-   SW_COMP_SSW,
+   SW_COMP_SSW = 1,
    SW_COMP_ATF,
    SW_COMP_APP,
+   NUM_SW_COMP
 };
 
 /* An identifier for an entity to which a resource can be allocated */
