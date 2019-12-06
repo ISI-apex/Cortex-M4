@@ -54,7 +54,8 @@ static struct link *rtps_shm_links[RTPS_R52_NUM_CORES] = {0};
 /* panics on failure */
 void links_init(enum rtps_mode rtps_mode)
 {
-    int rc = 1;
+    int rc;
+    (void)rc; /* silence unused warning */
 
     llist_init(&shm_links);
 
