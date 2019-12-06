@@ -1,7 +1,7 @@
 include ../Makefile.common
 
 # List boolean test and config flags here (always defined)
-CONFIG_FLAGS = \
+TEST_FLAGS = \
 	TEST_FLOAT \
 	TEST_SYSTICK \
 	TEST_WDTS \
@@ -11,6 +11,8 @@ CONFIG_FLAGS = \
 	TEST_ETIMER \
 	TEST_RTI_TIMER \
 	TEST_SHMEM \
+
+CONFIG_FLAGS = \
 	CONFIG_SYSTICK \
 	CONFIG_SLEEP_TIMER \
 	CONFIG_HPPS_TRCH_MAILBOX \
@@ -73,7 +75,7 @@ $(error TEST_WDTS requires one of CONFIG_*_WDT)
 endif
 endif
 
-CONFIG_ARGS = $(foreach m,$(CONFIG_FLAGS),-D$(m)=$($(m)))
+CONFIG_ARGS = $(foreach m,$(CONFIG_FLAGS) $(TEST_FLAGS),-D$(m)=$($(m)))
 CONFIG_ARGS += $(foreach m,$(CONFIG_OPTS),$(if $($(m)), -D$(m)=$($(m))))
 CONFIG_ARGS += -DCONFIG_SYSCFG_MEM__$(CONFIG_SYSCFG_MEM)
 

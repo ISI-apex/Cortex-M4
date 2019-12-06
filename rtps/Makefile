@@ -12,7 +12,7 @@
 include ../Makefile.common
 
 # List boolean test and config flags here (always defined)
-CONFIG_FLAGS = \
+TEST_FLAGS = \
 	TEST_FLOAT \
 	TEST_SORT \
 	TEST_GTIMER \
@@ -24,6 +24,8 @@ CONFIG_FLAGS = \
 	TEST_RTPS_DMA \
 	TEST_RTPS_DMA_CB \
 	TEST_SOFT_RESET \
+
+CONFIG_FLAGS = \
 	CONFIG_EL2 \
 	CONFIG_COUNTER_FREQUENCY \
 	CONFIG_GTIMER \
@@ -53,7 +55,7 @@ $(error CONFIG_SLEEP_TIMER requires a timer to be enabled)
 endif
 endif
 
-CONFIG_ARGS = $(foreach m,$(CONFIG_FLAGS),-D$(m)=$($(m)))
+CONFIG_ARGS = $(foreach m,$(CONFIG_FLAGS) $(TEST_FLAGS),-D$(m)=$($(m)))
 CONFIG_ARGS += $(foreach m,$(CONFIG_OPTS),$(if $($(m)), -D$(m)=$($(m))))
 
 ifneq ($(strip $(CONFIG_CONSOLE)),)
