@@ -71,12 +71,12 @@ void syscfg_print(struct syscfg *cfg)
            "\tsubsystems:\t%s\r\n"
            "\trtps mode:\t%s\r\n"
            "\trtps cores bitmask:\t0x%x\r\n"
-           "\thpps rootfs loc:\t%s\r\n",
+           "\trio: master: \t%u\r\n",
            cfg->have_sfs_offset, cfg->sfs_offset,
            cfg->load_binaries,
            subsys_name(cfg->subsystems),
            rtps_mode_name(cfg->rtps_mode), cfg->rtps_cores,
-           memdev_name(cfg->hpps.rootfs_loc));
+           cfg->rio.master);
     printf("\trtps r52 blobs: ");
     print_str_array(cfg->rtps_r52.blobs);
     printf("\r\n");
@@ -127,6 +127,13 @@ int syscfg_load(struct syscfg *cfg, uint8_t *addr)
             (const char *)(waddr + SYSCFG__HPPS_BLOBS__WORD));
     if (n < 0)
         return 3;
+
+    cfg->rio.master = (word0 & SYSCFG__RIO_MASTER__MASK)
+                        >> SYSCFG__RIO_MASTER__SHIFT;
+    cfg->test.rio_onchip = (word0 & SYSCFG__TEST_RIO_ONCHIP__MASK)
+                                >> SYSCFG__TEST_RIO_ONCHIP__SHIFT;
+    cfg->test.rio_offchip = (word0 & SYSCFG__TEST_RIO_OFFCHIP__MASK)
+                                >> SYSCFG__TEST_RIO_OFFCHIP__SHIFT;
 
     syscfg_print(cfg);
     return 0;

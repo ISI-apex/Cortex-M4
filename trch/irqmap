@@ -56,3 +56,10 @@ TRCH_IRQ__ELAPSED_TIMER: elapsed_timer_isr
 #if TEST_RTI_TIMER
 TRCH_IRQ__RTI_TIMER: rti_timer_trch_isr
 #endif
+
+#if CONFIG_RIO | TEST_RIO
+TRCH_IRQ__RIO_EP_0_MSG_TX: rio_ep_0_msg_tx_isr
+TRCH_IRQ__RIO_EP_0_MSG_RX: rio_ep_0_msg_rx_isr
+TRCH_IRQ__RIO_EP_1_MSG_TX: rio_ep_1_msg_tx_isr
+TRCH_IRQ__RIO_EP_1_MSG_RX: rio_ep_1_msg_rx_isr
+#endif

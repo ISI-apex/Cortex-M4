@@ -20,7 +20,13 @@
 #define SYSCFG__HPPS_ROOTFS_LOC__MASK      (0x7 << SYSCFG__HPPS_ROOTFS_LOC__SHIFT)
 #define SYSCFG__HAVE_SFS_OFFSET__SHIFT     12
 #define SYSCFG__HAVE_SFS_OFFSET__MASK      (0x1 << SYSCFG__HAVE_SFS_OFFSET__SHIFT)
-#define SYSCFG__SFS_OFFSET__WORD           1
+#define SYSCFG__RIO_MASTER__SHIFT          13
+#define SYSCFG__RIO_MASTER__MASK           (0x1 << SYSCFG__RIO_MASTER__SHIFT)
+#define SYSCFG__TEST_RIO_ONCHIP__SHIFT     14
+#define SYSCFG__TEST_RIO_ONCHIP__MASK      (0xF << SYSCFG__TEST_RIO_ONCHIP__SHIFT)
+#define SYSCFG__TEST_RIO_OFFCHIP__SHIFT    18
+#define SYSCFG__TEST_RIO_OFFCHIP__MASK     (0xF << SYSCFG__TEST_RIO_OFFCHIP__SHIFT)
+#define SYSCFG__SFS_OFFSET__WORD           2
 
 #define SYSCFG__RTPS_R52_BLOBS__WORD       4
 #define SYSCFG__RTPS_R52_BLOBS__WORDS      16
@@ -83,6 +89,15 @@ struct syscfg {
     struct syscfg_rtps_r52 rtps_r52;
     struct syscfg_rtps_a53 rtps_a53;
     struct syscfg_hpps hpps;
+
+    struct {
+        bool master;
+    } rio;
+
+    struct {
+        int rio_onchip; /* enum test_rio_tests */
+        int rio_offchip; /* enum test_rio_tests */
+    } test;
 };
 
 int syscfg_load(struct syscfg *cfg, uint8_t *addr);

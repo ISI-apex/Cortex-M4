@@ -14,6 +14,7 @@ TEST_FLAGS = \
 	TEST_ETIMER \
 	TEST_RTI_TIMER \
 	TEST_SHMEM \
+	TEST_RIO \
 
 CONFIG_FLAGS = \
 	CONFIG_SYSTICK \
@@ -34,6 +35,7 @@ CONFIG_FLAGS = \
 	CONFIG_RT_MMU \
 	CONFIG_SMC \
 	CONFIG_SFS \
+	CONFIG_RIO \
 	CONFIG_RELEASE \
 
 # List value-typed config options here (defined only if non-empty)
@@ -80,13 +82,21 @@ ifneq ($(strip $(TEST_RT_MMU_BASIC)),1)
 $(error TEST_RT_MMU_MAPPING_SWAP requires TEST_RT_MMU_BASIC)
 endif
 endif
-
 ifeq ($(strip $(TEST_WDTS)),1)
 ifneq ($(call cfg-or,$(CONFIG_TRCH_WDT) $(CONFIG_RTPS_R52_WDT) $(CONFIG_HPPS_WDT)),1)
 $(error TEST_WDTS requires one of CONFIG_*_WDT)
 # TODO: remove this dependency by factoring ISRs into a separate file
 endif
 endif
+
+ifeq ($(strip $(TEST_RIO)),1)
+ifneq ($(call cfg-and,$(CONFIG_RIO) $(CONFIG_RT_MMU) $(CONFIG_TRCH_DMA)),1)
+$(error TEST_RIO requires CONFIG_RIO CONFIG_RT_MMU CONFIG_TRCH_DMA)
+endif
+ifneq ($(strip $(CONFIG_TRCH_DMA)),1)
+$(error TEST_RIO requires CONFIG_TRCH_DMA)
+endif
+endif # TEST_RIO
 
 CONFIG_TESTS=$(if $(strip $(filter 1,$(foreach f,$(TEST_FLAGS),$($(f))))),1,0)
 
@@ -132,6 +142,9 @@ OBJS = \
        drivers/mmu.o \
        drivers/ns16550.o \
        drivers/nvic.o \
+       drivers/rio-pkt.o \
+       drivers/rio-switch.o \
+       drivers/rio-ep.o \
        drivers/rti-timer.o \
        drivers/smc.o \
        drivers/systick.o \
@@ -147,6 +160,7 @@ OBJS = \
        lib/mem.o \
        lib/object.o \
        lib/panic.o \
+       lib/rio-link.o \
        lib/sfs.o \
        lib/sha256.o \
        lib/shmem.o \
@@ -190,6 +204,9 @@ ifeq ($(call cfg-or,\
 	$(CONFIG_RTPS_TRCH_MAILBOX)),1)
 OBJS += mailbox-isr.o
 endif
+ifeq ($(strip $(CONFIG_RIO)),1)
+OBJS += rio-svc.o
+endif
 
 ifeq ($(CONFIG_TESTS),1)
 OBJS += tests/test.o
@@ -221,6 +238,9 @@ OBJS += test/test-rti-timer.o tests/rti-timer.o
 endif
 ifeq ($(strip $(TEST_SHMEM)),1)
 OBJS += tests/shmem.o
+endif
+ifeq ($(strip $(TEST_RIO)),1)
+OBJS += tests/rio.o
 endif
 
 TARGET=trch

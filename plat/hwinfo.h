@@ -78,6 +78,10 @@
 #define SMC_LSIO_NAND_BASE0         0x2c000000
 #define SMC_LSIO_NAND_SIZE0         0x04000000
 
+#define RIO_EP0_BASE            0xe3000000
+#define RIO_EP1_BASE            0xe4000000
+#define RIO_SWITCH_BASE         0xe5000000
+
 // See props in Qemu device tree node (or real HW characteristics)
 #define ETIMER_NOMINAL_FREQ_HZ 1000000000
 #define ETIMER_CLK_FREQ_HZ      125000000
@@ -101,5 +105,16 @@
 // we need to convert seconds to interations (empirically calibrated).
 #define RTPS_R52_BUSYLOOP_FACTOR       1000000
 #define TRCH_M4_BUSYLOOP_FACTOR		800000
+
+/* Which port on the switch is each on-chip endpoint connected to */
+/* TODO: are these discoverable? */
+#define RIO_EP0_SWITCH_PORT         0
+#define RIO_EP1_SWITCH_PORT         1
+#define RIO_HOPS_FROM_EP0_TO_SWITCH 0
+#define RIO_HOPS_FROM_EP1_TO_SWITCH 0
+
+#define RIO_EP0_OUT_AS_BASE     0x400000000
+#define RIO_EP1_OUT_AS_BASE     0x500000000
+#define RIO_OUT_AS_WIDTH        32 /* log2(size = 4GB in Chiplet mem map) */
 
 #endif // HWINFO_H

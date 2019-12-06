@@ -28,6 +28,7 @@
 #include "test.h"
 #include "watchdog.h"
 #include "syscfg.h"
+#include "rio-svc.h"
 
 #define SYSTICK_INTERVAL_MS     500
 #define SYSTICK_INTERVAL_CYCLES (SYSTICK_INTERVAL_MS * (SYSTICK_CLK_HZ / 1000))
@@ -40,6 +41,13 @@ static struct syscfg syscfg = {
     .rtps_mode = SYSCFG__RTPS_MODE__LOCKSTEP,
     .hpps.rootfs_loc = MEMDEV_HPPS_DRAM,
     .load_binaries = false,
+    .rio = {
+        .master = true,
+    },
+    .test = {
+        .rio_onchip = ~0,
+        .rio_offchip = 0,
+    },
 };
 
 #if CONFIG_TRCH_WDT
@@ -79,6 +87,9 @@ static void systick_tick(void *arg)
 
 int main ( void )
 {
+    int rc;
+    (void)rc; /* silence unused warning depending on config */
+
     console_init();
     printf("\r\n\r\nTRCH\r\n");
 
@@ -163,6 +174,25 @@ int main ( void )
 #endif // TEST_RT_MMU
 
     links_init(syscfg.rtps_mode);
+
+#if CONFIG_RIO
+    static struct rio_svc rio_svc; /* may be big, don't put on stack */
+    rc = rio_svc_init(&rio_svc, syscfg.rio.master);
+    if (rc) panic("RIO service");
+
+#if TEST_RIO /* must be after RT_MMU (TODO: RT MMU service */
+    /* This test is not standalone (it tests the RIO service, i.e. the test
+     * tests some SW functionality besides the driver), but a standalone
+     * test that intializes the driver could be added smoothly if desired. */
+
+    /* TODO: use HPPS SRIO DMA instead of TRCH DMA */
+    const unsigned dma_chan = 0; /* TODO: alloc dynamically */
+    test_rio_launch(&main_event_loop, syscfg.rio.master,
+            &rio_svc.sw, &rio_svc.eps[0], &rio_svc.eps[1], trch_dma, dma_chan,
+            syscfg.test.rio_onchip, syscfg.test.rio_offchip);
+#endif /* TEST_RIO */
+#endif /* CONFIG_RIO */
+
     boot_request(syscfg.subsystems);
 
 #if CONFIG_TRCH_WDT

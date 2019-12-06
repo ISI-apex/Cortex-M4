@@ -53,9 +53,18 @@ int rt_mmu_init()
                 HPPS_DDR_LOW_SIZE__HPPS_SMP))
         goto cleanup_trch_hpps_ddr_low;
 
+#if CONFIG_RIO
+    if (mmu_map(ctx, RIO_MEM_WIN_ADDR, RIO_MEM_ADDR, RIO_MEM_SIZE))
+        goto cleanup_rio_win;
+#endif /* CONFIG_RIO */
+
     mmu_enable(rt_mmu);
     return 0;
 
+#if CONFIG_RIO
+cleanup_rio_win:
+    mmu_unmap(ctx, HPPS_DDR_LOW_ADDR__HPPS_SMP, HPPS_DDR_LOW_SIZE__HPPS_SMP);
+#endif /* CONFIG_RIO */
 cleanup_trch_hpps_ddr_low:
     mmu_unmap(ctx, (uint32_t)HSIO_BASE, HSIO_SIZE);
 cleanup_trch_hsio:
@@ -84,8 +93,13 @@ int rt_mmu_deinit()
     int rc = 0;
     mmu_disable(rt_mmu);
 
+#if CONFIG_RIO
+    rc |= mmu_unmap(ctx, RIO_MEM_WIN_ADDR, RIO_MEM_SIZE);
+#endif /* CONFIG_RIO */
+
     rc |= mmu_unmap(ctx, HPPS_DDR_LOW_ADDR__HPPS_SMP,
             HPPS_DDR_LOW_SIZE__HPPS_SMP);
+
     rc |= mmu_unmap(ctx, (uint32_t)HSIO_BASE, HSIO_SIZE);
     rc |= mmu_unmap(ctx, (uint32_t)MBOX_HPPS_RTPS__BASE, HPSC_MBOX_AS_SIZE);
     rc |= mmu_unmap(ctx, (uint32_t)MBOX_HPPS_TRCH__BASE, HPSC_MBOX_AS_SIZE);

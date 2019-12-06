@@ -88,11 +88,23 @@
 // Within WINDOWS_TO_40BIT_ADDR, windows to RT_MMU_TEST_DATA_HI_x
 #define RT_MMU_TEST_DATA_HI_0_WIN_ADDR   0xc0000000
 #define RT_MMU_TEST_DATA_HI_1_WIN_ADDR   0xc1000000
+#define RIO_MEM_WIN_ADDR                 0xc2000000
+// Region in window space for RIO test to create mappings
+#define RIO_TEST_WIN_ADDR                0xc2020000
+#define RIO_TEST_WIN_SIZE                0x00040000
 
 // Two regions of same size
 #define RT_MMU_TEST_DATA_HI_0_ADDR      0x100000000
 #define RT_MMU_TEST_DATA_HI_1_ADDR      0x100010000
 #define RT_MMU_TEST_DATA_HI_SIZE            0x10000
+
+// Memory for Rapid IO, and windows to it in lo mem
+#define RIO_MEM_ADDR                    0x100020000
+#define RIO_MEM_SIZE                     0x00010000
+
+// Memory for Rapid IO test
+#define RIO_MEM_TEST_ADDR               0x100030000
+#define RIO_MEM_TEST_SIZE                0x00020000
 
 // Page table should be in memory that is on a bus accessible from the MMUs
 // master port ('dma' prop in MMU node in Qemu DT).  We put it in HPPS DRAM,

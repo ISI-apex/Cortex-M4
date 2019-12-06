@@ -32,6 +32,29 @@
     "RTPS_A53" : {
         "blobs": {"type": "strlist", "spec": [20, 16]}
     },
+    "rio" : {
+        "master" : {"type": "bitfield", "spec": [0, 13, 1, {"no": 0, "yes": 1}]}
+    },
+    "test" : {
+        "rio_onchip" : {"type": "bitfield", "spec": [0, 14, 4, {
+            // enum test_rio_tests in tests/test.h
+            "NONE": 0,
+            "ALL": 15, // ~0
+            "ONEWAY":   1,
+            "CSR":      2,
+            "MSG_RPC":  4,
+            "MAP":      8
+        }]},
+        "rio_offchip" : {"type": "bitfield", "spec": [0, 18, 4, {
+            // enum test_rio_tests in tests/test.h
+            "NONE": 0,
+            "ALL": 15, // ~0
+            "ONEWAY":   1,
+            "CSR":      2,
+            "MSG_RPC":  4,
+            "MAP":      8
+        }]}
+    },
     "HPPS" : {
         "blobs": {"type": "strlist", "spec": [36, 24]},
         "rootfs_loc" : {"type": "bitfield",
