@@ -55,8 +55,11 @@ $(error CONFIG_SLEEP_TIMER requires a timer to be enabled)
 endif
 endif
 
+CONFIG_TESTS=$(if $(strip $(filter 1,$(foreach f,$(TEST_FLAGS),$($(f))))),1,0)
+
 CONFIG_ARGS = $(foreach m,$(CONFIG_FLAGS) $(TEST_FLAGS),-D$(m)=$($(m)))
 CONFIG_ARGS += $(foreach m,$(CONFIG_OPTS),$(if $($(m)), -D$(m)=$($(m))))
+CONFIG_ARGS += -DCONFIG_TESTS=$(CONFIG_TESTS)
 
 ifneq ($(strip $(CONFIG_CONSOLE)),)
 CONFIG_ARGS += -DCONFIG_CONSOLE
@@ -103,7 +106,7 @@ ifeq ($(strip $(CONFIG_WDT)),1)
 OBJS += watchdog.o
 endif
 
-ifneq ($(strip $(filter 1,$(foreach f,$(TEST_FLAGS),$($(f))))),)
+ifeq ($(CONFIG_TESTS),1)
 OBJS += tests/test.o
 endif
 ifeq ($(strip $(TEST_FLOAT)),1)

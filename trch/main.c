@@ -107,8 +107,10 @@ int main ( void )
     struct ev_loop main_event_loop;
     ev_loop_init(&main_event_loop, "main");
 
+#if CONFIG_TESTS
     if (test_standalone())
         panic("standalone tests");
+#endif /* CONFIG_TESTS */
 
 #if CONFIG_TRCH_DMA
     struct dma *trch_dma = trch_dma_init();

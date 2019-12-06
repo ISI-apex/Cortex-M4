@@ -75,9 +75,12 @@ $(error TEST_WDTS requires one of CONFIG_*_WDT)
 endif
 endif
 
+CONFIG_TESTS=$(if $(strip $(filter 1,$(foreach f,$(TEST_FLAGS),$($(f))))),1,0)
+
 CONFIG_ARGS = $(foreach m,$(CONFIG_FLAGS) $(TEST_FLAGS),-D$(m)=$($(m)))
 CONFIG_ARGS += $(foreach m,$(CONFIG_OPTS),$(if $($(m)), -D$(m)=$($(m))))
 CONFIG_ARGS += -DCONFIG_SYSCFG_MEM__$(CONFIG_SYSCFG_MEM)
+CONFIG_ARGS += -DCONFIG_TESTS=$(CONFIG_TESTS)
 
 ifneq ($(strip $(CONFIG_CONSOLE)),)
 CONFIG_ARGS += -DCONFIG_CONSOLE
@@ -175,7 +178,7 @@ ifeq ($(call cfg-or,\
 OBJS += mailbox-isr.o
 endif
 
-ifneq ($(strip $(filter 1,$(foreach f,$(TEST_FLAGS),$($(f))))),)
+ifeq ($(CONFIG_TESTS),1)
 OBJS += tests/test.o
 endif
 ifeq ($(strip $(TEST_FLOAT)),1)

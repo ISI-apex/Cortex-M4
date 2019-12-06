@@ -154,8 +154,10 @@ static int main_primary(void)
 #endif // CONFIG_SLEEP_TIMER
 #endif // CONFIG_GTIMER
 
+#if CONFIG_TESTS
     if (test_standalone())
         panic("stanalone tests");
+#endif /* CONFIG_TESTS */
 
 #if TEST_RTI_TIMER
     // Test only one timer, because each timer can only be be tested from its
