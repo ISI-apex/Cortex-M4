@@ -6,10 +6,6 @@
 
 #include "mmus.h"
 
-#if MMU_TEST_REGION_SIZE > RT_MMU_TEST_DATA_LO_SIZE
-#error MMU_TEST_REGION greater than scratch space RT_MMU_TEST_DATA_LO_SIZE
-#endif
-
 static struct mmu *rt_mmu;
 static struct mmu_context *ctx;
 static struct mmu_stream *trch_stream;
@@ -57,24 +53,9 @@ int rt_mmu_init()
                 HPPS_DDR_LOW_SIZE__HPPS_SMP))
         goto cleanup_trch_hpps_ddr_low;
 
-#if TEST_RT_MMU
-    if (mmu_map(ctx, RT_MMU_TEST_DATA_HI_0_WIN_ADDR, RT_MMU_TEST_DATA_HI_0_ADDR,
-                          RT_MMU_TEST_DATA_HI_SIZE))
-	goto cleanup_hi1_win;
-    if (mmu_map(ctx, RT_MMU_TEST_DATA_HI_1_WIN_ADDR, RT_MMU_TEST_DATA_HI_1_ADDR,
-                          RT_MMU_TEST_DATA_HI_SIZE))
-	goto cleanup_hi0_win;
-#endif // TEST_RT_MMU
-
     mmu_enable(rt_mmu);
     return 0;
 
-#if TEST_RT_MMU
-cleanup_hi0_win:
-    mmu_unmap(ctx, RT_MMU_TEST_DATA_HI_0_WIN_ADDR, RT_MMU_TEST_DATA_HI_SIZE);
-cleanup_hi1_win:
-#endif // TEST_RT_MMU
-    mmu_unmap(ctx, HPPS_DDR_LOW_ADDR__HPPS_SMP, HPPS_DDR_LOW_SIZE__HPPS_SMP);
 cleanup_trch_hpps_ddr_low:
     mmu_unmap(ctx, (uint32_t)HSIO_BASE, HSIO_SIZE);
 cleanup_trch_hsio:
