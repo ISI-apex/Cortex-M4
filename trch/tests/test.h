@@ -1,6 +1,8 @@
 #ifndef TEST_H
 #define TEST_H
 
+int test_standalone();
+
 int test_trch_dma();
 int test_rt_mmu();
 int test_float();

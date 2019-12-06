@@ -107,35 +107,8 @@ int main ( void )
     struct ev_loop main_event_loop;
     ev_loop_init(&main_event_loop, "main");
 
-#if TEST_ETIMER
-    if (test_etimer())
-        panic("Elapsed Timer test");
-#endif // TEST_ETIMER
-
-#if TEST_RTI_TIMER
-    if (test_core_rti_timer())
-        panic("RTI Timer test");
-#endif // TEST_RTI_TIMER
-
-#if TEST_WDTS
-    if (test_wdts())
-        panic("WDT test");
-#endif // TEST_WDTS
-
-#if TEST_FLOAT
-    if (test_float())
-        panic("float test");
-#endif // TEST_FLOAT
-
-#if TEST_TRCH_DMA
-    if (test_trch_dma())
-        panic("TRCH DMA test");
-#endif // TEST_TRCH_DMA
-
-#if TEST_SHMEM
-    if (test_shmem())
-        panic("shmem test");
-#endif // TEST_SHMEM
+    if (test_standalone())
+        panic("standalone tests");
 
 #if CONFIG_TRCH_DMA
     struct dma *trch_dma = trch_dma_init();
