@@ -33,13 +33,15 @@ enum memdev {
     MEMDEV_TRCH_SRAM     = 0x7,
 };
 
+enum rtps_mode {
+    SYSCFG__RTPS_MODE__LOCKSTEP    = 0x0,
+    SYSCFG__RTPS_MODE__SMP	       = 0x1,
+    SYSCFG__RTPS_MODE__SPLIT       = 0x2,
+};
+
 struct syscfg {
     subsys_t subsystems; // bitmask of subsystems to boot
-    enum {
-        SYSCFG__RTPS_MODE__LOCKSTEP    = 0x0,
-        SYSCFG__RTPS_MODE__SMP	       = 0x1,
-        SYSCFG__RTPS_MODE__SPLIT       = 0x2,
-    } rtps_mode;
+    enum rtps_mode rtps_mode;
     uint8_t rtps_cores; /* bitmask (valid only in SPLIT mode) */
     enum memdev hpps_rootfs_loc;
     bool have_sfs_offset;
