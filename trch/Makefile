@@ -139,6 +139,7 @@ OBJS = \
        plat/board.o \
        boot.o \
        isr.o \
+       links.o \
        main.o \
        psci.o \
        reset.o \
