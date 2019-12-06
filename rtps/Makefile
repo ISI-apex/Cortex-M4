@@ -102,6 +102,9 @@ ifeq ($(strip $(CONFIG_WDT)),1)
 OBJS += watchdog.o
 endif
 
+ifneq ($(strip $(filter 1,$(foreach f,$(TEST_FLAGS),$($(f))))),)
+OBJS += tests/test.o
+endif
 ifeq ($(strip $(TEST_FLOAT)),1)
 OBJS += tests/float.o
 endif

@@ -158,32 +158,15 @@ static int main_primary(void)
 #endif // CONFIG_SLEEP_TIMER
 #endif // CONFIG_GTIMER
 
+    if (test_standalone())
+        panic("stanalone tests");
+
 #if TEST_RTI_TIMER
     // Test only one timer, because each timer can only be be tested from its
     // associated core, and the SMP mode doesn't support running tests yet.
     if (test_core_rti_timer(&rti_timer))
         panic("RTI Timer test");
 #endif // TEST_RTI_TIMER
-
-#if TEST_FLOAT
-    if (test_float())
-        panic("float test");
-#endif // TEST_FLOAT
-
-#if TEST_SORT
-    if (test_sort())
-        panic("sort test");
-#endif // TEST_SORT
-
-#if TEST_RT_MMU
-    if (test_rt_mmu())
-        panic("TRCH/RTPS->HPPS MMU test");
-#endif // TEST_RT_MMU
-
-#if TEST_RTPS_MMU
-    if (test_rtps_mmu())
-        panic("RTPS MMU test");
-#endif // TEST_RT_MMU
 
 #if TEST_RTPS_DMA
     if (test_rtps_dma(&rtps_dma))

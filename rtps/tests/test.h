@@ -10,6 +10,8 @@ struct link;
 // Tests that create device instances are passed the location of the pointer
 // to the device instance from where the ISR gets the pointer to the device.
 
+int test_standalone();
+
 int test_float();
 int test_sort();
 int test_gtimer();
