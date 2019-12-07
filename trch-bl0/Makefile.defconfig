@@ -9,6 +9,8 @@ CONFIG_UART_BAUDRATE		?= 500000
 CONFIG_CFG_ADDR_0 ?= 0x00000000
 CONFIG_CFG_ADDR_1 ?= 0x00100000
 
+CONFIG_RELOC_ADDR ?= 0x000f0000
+
 # TODO: once GPIO implemented, make this unset by default (but keep for testing)
 CONFIG_BOOT_SELECT = \
     BS_SRAM_INTERFACE \

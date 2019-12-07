@@ -2,13 +2,11 @@
 .cpu cortex-m4
 .thumb
 
-#define BL0_RELOC_ADDR	0xF0000
-
 .thumb_func
 .global _main
 _main:
     adr  r1, here
-    ldr  r0, =$(BL0_RELOC_ADDR) 
+    ldr  r0, =$(CONFIG_RELOC_ADDR)
     add  r1, r1, r0
     
     movs r2, #0x1
