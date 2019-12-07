@@ -1,3 +1,4 @@
+#include "arm.h"
 #include "gic.h"
 #include "hwinfo.h"
 #include "mailbox-link.h"
@@ -51,6 +52,8 @@ void links_init()
     hpps_mbox[1] = HPPS_MBOX1_CHAN__RTPS_R52_SMP_SSW__HPPS_SMP_APP;
 #else /* !CONFIG_SMP */
 #if CONFIG_SPLIT /* same binary for either core; condition at runtime */
+    unsigned core = self_core_id();
+    ASSERT(core < RTPS_R52_NUM_CORES);
     switch (core) {
     case 0:
         self_owner = OWNER(SW_SUBSYS_RTPS_R52_SPLIT_0, self_sw);
