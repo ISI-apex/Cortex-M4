@@ -19,11 +19,11 @@ here:
     ldr  r0, =__bss_start__
     ldr  r1, =__bss_end__
     mov  r2, #0
-bss_zero_loop:
+zero_relocated_bss_loop:
     str  r2, [r0]
     add  r0, #4
     cmp  r0, r1
-    bne  bss_zero_loop
+    bne  zero_relocated_bss_loop
 
     bl   main_relocated
 
