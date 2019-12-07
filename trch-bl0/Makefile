@@ -121,4 +121,7 @@ $(addprefix $(BLDDIR)/,$(OBJS)) : Makefile Makefile.defconfig Makefile.config
 Makefile.config:
 	touch $@
 
+%.s: %.S
+	$(CROSS_COMPILE)gcc $(COPS) -E -o $@ $<
+
 -include $(addprefix $(BLDDIR)/,$(OBJS:.o=.d))
