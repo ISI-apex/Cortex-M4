@@ -102,7 +102,7 @@ $(BLDDIR)/%.o : %.c | dirs
 	$(CROSS_COMPILE)gcc -MMD $(COPS) -c $< -o $@
 
 $(BLDDIR)/$(TARGET).cpp.ld: $(TARGET).ld | dirs
-	$(CROSS_COMPILE)gcc $(COPTS) -E -P -C -nostdinc -x assembler-with-cpp \
+	$(CROSS_COMPILE)gcc $(COPS) -E -P -C -nostdinc -x assembler-with-cpp \
 		-o $@ $<
 
 $(BLDDIR)/$(TARGET).dbg.elf: $(BLDDIR)/$(TARGET).cpp.ld \
