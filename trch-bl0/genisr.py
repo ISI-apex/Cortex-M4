@@ -244,7 +244,7 @@ bss_zero_loop:
     add r0, #4
     cmp r0, r1
     bne bss_zero_loop
-    bl _main
+    bl main
     b hang
 """
 + "\n");

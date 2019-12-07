@@ -53,7 +53,7 @@ VPATH = ..
 # vectors.o and isrs.o must be first
 OBJS = \
        vectors.o \
-       _main.o \
+       main.o \
        relocate_code.o \
        isrs.o \
        drivers/cortex-m4.o \
@@ -68,7 +68,7 @@ OBJS = \
        lib/sha256.o \
        lib/str.o \
        plat/board.o \
-       main.o \
+       main-relocated.o \
        sections.o \
 
 ifneq ($(strip $(CONFIG_CONSOLE)),)

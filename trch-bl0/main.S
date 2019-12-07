@@ -3,8 +3,8 @@
 .thumb
 
 .thumb_func
-.global _main
-_main:
+.global main
+main:
     adr  r1, here
     ldr  r0, =$(CONFIG_RELOC_ADDR)
     add  r1, r1, r0
@@ -25,5 +25,5 @@ bss_zero_loop:
     cmp  r0, r1
     bne  bss_zero_loop
 
-    bl   main
+    bl   main_relocated
 

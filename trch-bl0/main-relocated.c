@@ -168,7 +168,7 @@ static uint8_t *get_smc_sram_rank_addr(struct smc *smc, unsigned rank)
     return NULL; /* unreachable */
 }
 
-int main ( void )
+int main_relocated ( void )
 {
     int mem_rank;
     unsigned mem_chip, mem_chip_backup;
