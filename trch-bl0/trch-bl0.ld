@@ -64,7 +64,7 @@ SECTIONS
 
 
     .bss_start __rel_dyn_start (OVERLAY) : {
-	KEEP(*(.__bss_start));
+	KEEP(*(.__bss_start__));
 	__bss_base = .;
     }
 
@@ -75,7 +75,7 @@ SECTIONS
     }
 
     .bss_end __bss_limit (OVERLAY) : {
-	KEEP(*(.__bss_end));
+	KEEP(*(.__bss_end__));
     }
 
     __stacktop = 0x100000 - 0x4;

@@ -16,8 +16,8 @@ _main:
 
 here:
     // Zero-initialize .bss
-    ldr  r0, =__bss_start
-    ldr  r1, =__bss_end
+    ldr  r0, =__bss_start__
+    ldr  r1, =__bss_end__
     mov  r2, #0
 bss_zero_loop:
     str  r2, [r0]
