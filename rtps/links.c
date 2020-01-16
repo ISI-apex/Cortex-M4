@@ -135,8 +135,10 @@ void links_init()
 #endif // CONFIG_HPPS_RTPS_MAILBOX
 }
 
+#if CONFIG_RTPS_TRCH_MAILBOX
 struct link *links_get_trch_mbox_link()
 {
     ASSERT(trch_link);
     return trch_link;
 }
+#endif /* CONFIG_RTPS_TRCH_MAILBOX */

@@ -190,8 +190,11 @@ static int main_primary(void)
 
     cmd_handler_register(server_process);
     links_init();
+
+#if CONFIG_RTPS_TRCH_MAILBOX
     struct link *trch_link = links_get_trch_mbox_link();
     (void)trch_link;
+#endif /* CONFIG_RTPS_TRCH_MAILBOX */
 
 #if TEST_RTPS_TRCH_MAILBOX
     if (test_rtps_trch_mailbox(trch_link))
