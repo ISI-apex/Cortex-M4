@@ -1,28 +1,38 @@
 // Must match fields defined in trch/syscfg.h
 {
     "boot" : {
-        // field spec: word index, bit position, bit width, value dictionary
-        "load_binaries" : [ 0, 0, 1, { "no" : 0, "yes" : 1 }],
-        "rtps_mode"  : [ 0, 1, 2, {
-            "LOCKSTEP"   : 0,
-            "SMP"        : 1,
-            "SPLIT"      : 2
-        }],
-        "rtps_cores" : [ 0, 3, 2, { "CORE0": 1, "CORE1": 2 } ], // bitmask
-        "subsystems" : [ 0, 5, 4, {
-            "TRCH"      : 1,
-            "RTPS_R52"  : 2,
-            "RTPS_A53"  : 4,
-            "HPPS"      : 8
-        }],
-        "have_sfs_offset" : [ 0, 12, 1, {"no": 0, "yes": 1} ],
-        "sfs_offset" : [ 1, 0, 32 ]
+        // bitfield/bitmask spec: word index, bit pos, bit width[, value dict]
+        // u32 spec: word index
+        "load_binaries" : {"type": "bitfield",
+            "spec": [0, 0, 1, {"no" : 0, "yes" : 1}]},
+        "rtps_mode"  : {"type": "bitfield",
+            "spec": [0, 1, 2, {
+                "LOCKSTEP"   : 0,
+                "SMP"        : 1,
+                "SPLIT"      : 2
+                }]
+            },
+        "rtps_cores" : {"type": "bitmask",
+            "spec": [0, 3, 2, {"CORE0": 1, "CORE1": 2}]},
+        "subsystems" : {"type": "bitmask",
+            "spec": [0, 5, 4, {
+                "TRCH"      : 1,
+                "RTPS_R52"  : 2,
+                "RTPS_A53"  : 4,
+                "HPPS"      : 8
+                }]
+            },
+        "have_sfs_offset" : {"type": "bitfield",
+            "spec": [0, 12, 1, {"no": 0, "yes": 1}]},
+        "sfs_offset" : {"type": "u32", "spec": [1]}
     },
     "HPPS" : {
-        "rootfs_loc" : [ 0, 9, 3, {
-             // value type: enum memdev
-             "HPPS_SMC_NAND"  : 3,
-             "HPPS_DRAM"      : 4
-        }]
+        "rootfs_loc" : {"type": "bitfield",
+            "spec": [0, 9, 3, {
+                 // value type: enum memdev
+                 "HPPS_SMC_NAND"  : 3,
+                 "HPPS_DRAM"      : 4
+            }]
+        }
     }
 }
