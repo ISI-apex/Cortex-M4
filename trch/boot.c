@@ -15,55 +15,39 @@ static subsys_t reboot_requests;
 
 static int boot_load(subsys_t subsys, struct syscfg *cfg, struct sfs *fs)
 {
-    ASSERT(fs);
-    switch (subsys) {
-        case SUBSYS_RTPS_R52:
-            printf("BOOT: load RTPS mode: %x\r\n", cfg->rtps_mode);
-            switch (cfg->rtps_mode) {
-                case SYSCFG__RTPS_MODE__LOCKSTEP:
-                    if (sfs_load(fs, "rtps-bl", NULL, NULL))
-                        return 1;
-                    if (sfs_load(fs, "rtps-os", NULL, NULL))
-                        return 1;
-                    break;
-                case SYSCFG__RTPS_MODE__SMP: // TODO
-                    panic("TODO: NOT IMPLEMENTED: loading for SMP mode");
-                case SYSCFG__RTPS_MODE__SPLIT: // TODO
-                    panic("TODO: NOT IMPLEMENTED: loading for SPLIT mode");
-            }
-            break;
-        case SUBSYS_RTPS_A53:
-            // TODO: load binaries
-            break;
-        case SUBSYS_HPPS:
-            printf("BOOT: load HPPS\r\n");
-
-            if (sfs_load(fs, "hpps-fw", NULL, NULL))
-                return 1;
-            if (sfs_load(fs, "hpps-bl", NULL, NULL))
-                return 1;
-            if (sfs_load(fs, "hpps-bl-dt", NULL, NULL)) {
-                printf("BOOT: hpps-bl-dt not found in NV mem;"
-                       "will fall back to compiled-in DT");
-            }
-            if (sfs_load(fs, "hpps-bl-env", NULL, NULL)) {
-                printf("BOOT: hpps-bl-env not found in NV mem;"
-                       "will fall back to compiled-in environment");
-            }
-            if (sfs_load(fs, "hpps-dt", NULL, NULL))
-                return 1;
-            if (sfs_load(fs, "hpps-os", NULL, NULL))
-                return 1;
-            if (sfs_load(fs, "hpps-initramfs", NULL, NULL)) {
-                printf("BOOT: hpps-initramfs not found in NV mem;"
-                       "booting without initramfs");
-            }
-            break;
-        default:
-            printf("BOOT: ERROR: unknown subsystem %x\r\n", subsys);
-            return 1;
-     };
-    return 0;
+   struct syscfg_rtps_r52 *cfg_r52;
+   struct syscfg_rtps_a53 *cfg_a53;
+   struct syscfg_hpps *cfg_hpps;
+   ASSERT(fs);
+   switch (subsys) {
+      case SUBSYS_RTPS_R52:
+         printf("BOOT: load RTPS\r\n");
+         cfg_r52 = &cfg->rtps_r52;
+         for (int i = 0; cfg_r52->blobs[i]; ++i) {
+            if (sfs_load(fs, cfg_r52->blobs[i], NULL, NULL))
+               return 1;
+         }
+         break;
+      case SUBSYS_RTPS_A53:
+         cfg_a53 = &cfg->rtps_a53;
+         for (int i = 0; cfg_a53->blobs[i]; ++i) {
+            if (sfs_load(fs, cfg_a53->blobs[i], NULL, NULL))
+               return 1;
+         }
+         break;
+      case SUBSYS_HPPS:
+         printf("BOOT: load HPPS\r\n");
+         cfg_hpps = &cfg->hpps;
+         for (int i = 0; cfg_hpps->blobs[i]; ++i) {
+            if (sfs_load(fs, cfg_hpps->blobs[i], NULL, NULL))
+               return 1;
+         }
+         break;
+      default:
+         printf("BOOT: ERROR: unknown subsystem %x\r\n", subsys);
+         return 1;
+   };
+   return 0;
 }
 
 static int boot_reset(subsys_t subsys, struct syscfg *cfg)

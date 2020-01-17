@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <unistd.h>
 
 #include "console.h"
 #include "subsys.h"
@@ -31,6 +32,36 @@ const char *memdev_name(enum memdev d)
     };
 }
 
+/* Note: we don't have to make copy; but copying keeps things simpler overall */
+static ssize_t parse_slist(char *raw, size_t raw_sz,
+                           const char **array, size_t array_sz,
+                           const char *src)
+{
+    size_t strings = 0;
+    size_t len = 0;
+    const char *s = raw;
+    while (*src != '\0') {
+        if (len++ == raw_sz)
+            return -1;
+        *raw++ = *src++;
+        if (*src == '\0') {
+            *raw++ = *src++; /* copy the null */
+            if (strings == array_sz)
+                return -2;
+            array[strings++] = s; /* add the string that just ended */
+            s = raw; /* record start of the new string */
+        }
+    }
+    array[strings] = NULL;
+    return len;
+}
+
+static void print_str_array(const char **sa)
+{
+    for (int i = 0; sa[i]; ++i)
+        printf("%s ", sa[i]);
+}
+
 void syscfg_print(struct syscfg *cfg)
 {
     printf("SYSTEM CONFIG:\r\n"
@@ -46,14 +77,26 @@ void syscfg_print(struct syscfg *cfg)
            subsys_name(cfg->subsystems),
            rtps_mode_name(cfg->rtps_mode), cfg->rtps_cores,
            memdev_name(cfg->hpps.rootfs_loc));
+    printf("\trtps r52 blobs: ");
+    print_str_array(cfg->rtps_r52.blobs);
+    printf("\r\n");
+    printf("\trtps a53 blobs: ");
+    print_str_array(cfg->rtps_a53.blobs);
+    printf("\r\n");
+    printf("\thpps blobs: ");
+    print_str_array(cfg->hpps.blobs);
+    printf("\r\n");
 }
 
 int syscfg_load(struct syscfg *cfg, uint8_t *addr)
 {
     uint32_t *waddr = (uint32_t *)addr;
     uint32_t word0;
+    ssize_t n;
 
-    word0 = *waddr++;
+    uint32_t *wp = waddr;
+
+    word0 = *wp++;
     printf("SYSCFG: @%p word0: %x\r\n", addr, word0);
 
     /* TODO: use field macros from lib/ */
@@ -67,7 +110,23 @@ int syscfg_load(struct syscfg *cfg, uint8_t *addr)
                                 >> SYSCFG__HAVE_SFS_OFFSET__SHIFT;
     cfg->load_binaries = (word0 & SYSCFG__LOAD_BINARIES__MASK)
                                 >> SYSCFG__LOAD_BINARIES__SHIFT;
-    cfg->sfs_offset = *waddr++;
+    cfg->sfs_offset = *wp++;
+
+    n = parse_slist(cfg->rtps_r52.blobs_raw, sizeof(cfg->rtps_r52.blobs_raw),
+            cfg->rtps_r52.blobs, sizeof(cfg->rtps_r52.blobs) / sizeof(char *),
+            (const char *)(waddr + SYSCFG__RTPS_R52_BLOBS__WORD));
+    if (n < 0)
+        return 1;
+    n = parse_slist(cfg->rtps_a53.blobs_raw, sizeof(cfg->rtps_a53.blobs_raw),
+            cfg->rtps_a53.blobs, sizeof(cfg->rtps_a53.blobs) / sizeof(char *),
+            (const char *)(waddr + SYSCFG__RTPS_A53_BLOBS__WORD));
+    if (n < 0)
+        return 2;
+    n = parse_slist(cfg->hpps.blobs_raw, sizeof(cfg->hpps.blobs_raw),
+            cfg->hpps.blobs, sizeof(cfg->hpps.blobs) / sizeof(char *),
+            (const char *)(waddr + SYSCFG__HPPS_BLOBS__WORD));
+    if (n < 0)
+        return 3;
 
     syscfg_print(cfg);
     return 0;

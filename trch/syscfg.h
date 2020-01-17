@@ -22,6 +22,24 @@
 #define SYSCFG__HAVE_SFS_OFFSET__MASK      (0x1 << SYSCFG__HAVE_SFS_OFFSET__SHIFT)
 #define SYSCFG__SFS_OFFSET__WORD           1
 
+#define SYSCFG__RTPS_R52_BLOBS__WORD       4
+#define SYSCFG__RTPS_R52_BLOBS__WORDS      16
+#define SYSCFG__RTPS_R52_BLOBS__SIZE \
+    (SYSCFG__RTPS_R52_BLOBS__WORDS * sizeof(uint32_t))
+
+#define SYSCFG__RTPS_A53_BLOBS__WORD       20
+#define SYSCFG__RTPS_A53_BLOBS__WORDS      16
+#define SYSCFG__RTPS_A53_BLOBS__SIZE \
+    (SYSCFG__RTPS_A53_BLOBS__WORDS * sizeof(uint32_t))
+
+#define SYSCFG__HPPS_BLOBS__WORD           36
+#define SYSCFG__HPPS_BLOBS__WORDS          24
+#define SYSCFG__HPPS_BLOBS__SIZE \
+    (SYSCFG__HPPS_BLOBS__WORDS * sizeof(uint32_t))
+
+/* Max number of binary blobs in the lists of blobs */
+#define MAX_BLOBS 8
+
 enum memdev {
     MEMDEV_TRCH_SMC_SRAM = 0x0,
     MEMDEV_TRCH_SMC_NAND = 0x1,
@@ -39,8 +57,20 @@ enum rtps_mode {
     SYSCFG__RTPS_MODE__SPLIT       = 0x2,
 };
 
+struct syscfg_rtps_r52 {
+    char blobs_raw[SYSCFG__RTPS_R52_BLOBS__SIZE];
+    const char *blobs[MAX_BLOBS];
+};
+
+struct syscfg_rtps_a53 {
+    char blobs_raw[SYSCFG__RTPS_A53_BLOBS__SIZE];
+    const char *blobs[MAX_BLOBS];
+};
+
 struct syscfg_hpps {
     enum memdev rootfs_loc;
+    char blobs_raw[SYSCFG__HPPS_BLOBS__SIZE];
+    const char *blobs[MAX_BLOBS];
 };
 
 struct syscfg {
@@ -50,6 +80,8 @@ struct syscfg {
     bool have_sfs_offset;
     uint32_t sfs_offset;
     bool load_binaries;
+    struct syscfg_rtps_r52 rtps_r52;
+    struct syscfg_rtps_a53 rtps_a53;
     struct syscfg_hpps hpps;
 };
 

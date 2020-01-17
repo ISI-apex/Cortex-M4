@@ -26,7 +26,14 @@
             "spec": [0, 12, 1, {"no": 0, "yes": 1}]},
         "sfs_offset" : {"type": "u32", "spec": [1]}
     },
+    "RTPS_R52" : {
+        "blobs": {"type": "strlist", "spec": [4, 16]}
+    },
+    "RTPS_A53" : {
+        "blobs": {"type": "strlist", "spec": [20, 16]}
+    },
     "HPPS" : {
+        "blobs": {"type": "strlist", "spec": [36, 24]},
         "rootfs_loc" : {"type": "bitfield",
             "spec": [0, 9, 3, {
                  // value type: enum memdev
