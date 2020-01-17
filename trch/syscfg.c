@@ -45,7 +45,7 @@ void syscfg_print(struct syscfg *cfg)
            cfg->load_binaries,
            subsys_name(cfg->subsystems),
            rtps_mode_name(cfg->rtps_mode), cfg->rtps_cores,
-           memdev_name(cfg->hpps_rootfs_loc));
+           memdev_name(cfg->hpps.rootfs_loc));
 }
 
 int syscfg_load(struct syscfg *cfg, uint8_t *addr)
@@ -61,7 +61,7 @@ int syscfg_load(struct syscfg *cfg, uint8_t *addr)
     cfg->rtps_cores = (word0 & SYSCFG__RTPS_CORES__MASK)
                             >> SYSCFG__RTPS_CORES__SHIFT;
     cfg->subsystems = (word0 & SYSCFG__SUBSYS__MASK) >> SYSCFG__SUBSYS__SHIFT;
-    cfg->hpps_rootfs_loc = (word0 & SYSCFG__HPPS_ROOTFS_LOC__MASK)
+    cfg->hpps.rootfs_loc = (word0 & SYSCFG__HPPS_ROOTFS_LOC__MASK)
                                 >> SYSCFG__HPPS_ROOTFS_LOC__SHIFT;
     cfg->have_sfs_offset = (word0 & SYSCFG__HAVE_SFS_OFFSET__MASK)
                                 >> SYSCFG__HAVE_SFS_OFFSET__SHIFT;

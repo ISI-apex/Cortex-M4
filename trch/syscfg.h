@@ -39,14 +39,18 @@ enum rtps_mode {
     SYSCFG__RTPS_MODE__SPLIT       = 0x2,
 };
 
+struct syscfg_hpps {
+    enum memdev rootfs_loc;
+};
+
 struct syscfg {
     subsys_t subsystems; // bitmask of subsystems to boot
     enum rtps_mode rtps_mode;
     uint8_t rtps_cores; /* bitmask (valid only in SPLIT mode) */
-    enum memdev hpps_rootfs_loc;
     bool have_sfs_offset;
     uint32_t sfs_offset;
     bool load_binaries;
+    struct syscfg_hpps hpps;
 };
 
 int syscfg_load(struct syscfg *cfg, uint8_t *addr);
