@@ -8,6 +8,8 @@ TEST_RT_MMU						?= 0
 TEST_ETIMER						?= 0
 TEST_RTI_TIMER					?= 0
 TEST_SHMEM						?= 0
+TEST_32_MMU_ACCESS_PHYSICAL		?= 1
+TEST_MMU_MAPPING_SWAP			?= 1
 
 # Set build configuration here
 CONFIG_SYSTICK					?= 1

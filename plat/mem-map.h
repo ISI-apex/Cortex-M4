@@ -70,6 +70,10 @@
 #define RT_MMU_TEST_DATA_HI_1_ADDR      0x100010000
 #define RT_MMU_TEST_DATA_HI_SIZE            0x10000
 
+#define MMU_TEST_DATA_HI_0_ADDR        0x0500000000
+#define MMU_TEST_DATA_HI_1_ADDR        0x0500001000
+#define MMU_TEST_DATA_HI_SIZE              0x001000
+
 // Boot config (TODO: to be replaced by u-boot env/script)
 #define HPPS_DDR_ADDR__HPPS_SMP__BOOT_MODE 0xc001fffc
 
@@ -96,5 +100,9 @@
 
 #define RT_MMU_TEST_DATA_LO_ADDR         0xc3fff000
 #define RT_MMU_TEST_DATA_LO_SIZE           0x001000
+
+#define MMU_TEST_DATA_LO_0_ADDR          0xc2ffe000
+#define MMU_TEST_DATA_LO_1_ADDR          0xc2fff000
+#define MMU_TEST_DATA_LO_SIZE              0x001000
 
 #endif // MEM_MAP_H

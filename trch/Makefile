@@ -11,6 +11,8 @@ CONFIG_FLAGS = \
 	TEST_ETIMER \
 	TEST_RTI_TIMER \
 	TEST_SHMEM \
+	TEST_32_MMU_ACCESS_PHYSICAL \
+	TEST_MMU_MAPPING_SWAP \
 	CONFIG_SYSTICK \
 	CONFIG_SLEEP_TIMER \
 	CONFIG_HPPS_TRCH_MAILBOX \
@@ -146,6 +148,14 @@ OBJS += tests/dma.o
 endif
 ifeq ($(strip $(TEST_RT_MMU)),1)
 OBJS += tests/mmu.o
+endif
+ifeq ($(strip $(TEST_32_MMU_ACCESS_PHYSICAL)),1)
+OBJS += tests/mmu.o
+OBJS += mmus.o
+endif
+ifeq ($(strip $(TEST_MMU_MAPPING_SWAP)),1)
+OBJS += tests/mmu.o
+OBJS += mmus.o
 endif
 ifeq ($(strip $(TEST_WDTS)),1)
 OBJS += tests/wdt.o

@@ -133,6 +133,25 @@ int main ( void )
     struct dma *trch_dma = NULL;
 #endif // !CONFIG_TRCH_DMA
 
+#if TEST_32_MMU_ACCESS_PHYSICAL
+    if (test_32_mmu_access_physical_mwr(MMU_TEST_DATA_LO_0_ADDR, MMU_TEST_DATA_LO_1_ADDR, MMU_TEST_DATA_LO_SIZE))
+        panic("MMU 32-bit access test map-write-read");
+    else
+        printf("MMU map-write-read test success\n");
+
+    if (test_32_mmu_access_physical_wmr(MMU_TEST_DATA_LO_0_ADDR, MMU_TEST_DATA_LO_1_ADDR, MMU_TEST_DATA_LO_SIZE))
+        panic("MMU 32-bit access test write-map-read");
+    else
+        printf("MMU write-map-read test success\n");
+#endif
+
+#if TEST_MMU_MAPPING_SWAP
+    if (test_mmu_mapping_swap(MMU_TEST_DATA_LO_0_ADDR, MMU_TEST_DATA_LO_1_ADDR, MMU_TEST_DATA_HI_0_ADDR, MMU_TEST_DATA_LO_SIZE)) //map argument 1 to argument 3 then argument 2 to argument 3
+        panic("MMU mapping swap");
+    else
+        printf("MMU mapping swap test success\n");
+#endif
+
 #if CONFIG_RT_MMU
     if (rt_mmu_init())
         panic("RTPS/TRCH-HPPS MMU setup");
