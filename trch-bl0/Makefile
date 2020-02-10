@@ -60,7 +60,6 @@ OBJS = \
        drivers/ns16550.o \
        drivers/smc.o \
        drivers/systick.o \
-       lib/ecc.o \
        lib/intc.o \
        lib/mem.o \
        lib/object.o \

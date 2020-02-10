@@ -1,3 +1,4 @@
+
 #define DEBUG 1
 
 #include <stdbool.h>
@@ -10,7 +11,6 @@
 #include "debug.h"
 #include "smc.h"
 #include "sha256.h"
-#include "ecc.h"
 #include "panic.h"
 
 #if DEBUG
@@ -19,10 +19,15 @@
 #define PANICX(...) while (1)
 #endif /* !DEBUG */
 
+
 #define VECTOR_TABLE_SIZE 0x400
 #define STACK_POINTER	0xffffc
 
 #define SHA256_CHECKSUM_SIZE 32
+
+/* Do not use global variable.
+ * Currently, global variable is not ready for relocation
+ */
 
 /*
    Boot Select Code:
@@ -77,7 +82,6 @@ typedef struct {
     uint32_t bl1_load_addr; /* where bl1 image is loaded */
     uint32_t bl1_entry_offset; /* entry offset from the start of the bl1 image */
     unsigned char checksum[SHA256_CHECKSUM_SIZE]; /* checksum of the bl1 image */
-    unsigned char ecc[ECC_512_SIZE]; /* ecc of the bl0_blob except ecc */
 } bl0_blob;
 
 static void show_config(bl0_blob *cfg)
@@ -92,42 +96,103 @@ static void show_config(bl0_blob *cfg)
     for (i = 0; i < SHA256_CHECKSUM_SIZE; i++)
         DPRINTF("%02x", cfg->checksum[i]);
     DPRINTF("\r\n");
-    DPRINTF("ecc = 0x%02x 0x%02x 0x%02x\r\n",
-        cfg->ecc[0], cfg->ecc[1], cfg->ecc[2]);
 }
 
 static inline int diff_checksum(unsigned char * a, unsigned char * b) {
     int i;
     for (i = 0; i < SHA256_CHECKSUM_SIZE; i++) {
-        if (a[i] != b[i]) return 1;
+	DPRINTF("0x%2x ", b[i]);
+    }
+    DPRINTF("\r\n");
+    for (i = 0; i < SHA256_CHECKSUM_SIZE; i++) {
+        if (a[i] != b[i]) {
+		DPRINTF("%s: a[%d] (0x%x) != b[%d] (0x%x)\n", __func__, i, a[i], i, b[i]);
+		return 1;
+	}
     }
     DPRINTF("BL0: checksum success\r\n");
     return 0;
 }
 
-/* copied and modified from lib/sfs.c */
-static int load_memcpy(uint32_t *mem_addr, uint32_t *load_addr, unsigned size)
+#define ECC_ENG_DECODE_INPUT_REG0 	0x30006500
+#define ECC_ENG_DECODE_INPUT_REG1 	0x30006504
+#define ECC_ENG_DECODE_OUTPUT_REG 	0x30006508
+#define ECC_ENG_ENCODE_INPUT_REG 	0x30006510
+#define ECC_ENG_ENCODE_OUTPUT_REG0 	0x30006514
+#define ECC_ENG_ENCODE_OUTPUT_REG1 	0x30006518
+#define ECC_ENG_DECODE_STATUS_REG 	0x30006520
+
+#define ECC_DECODE_DONE	0x2
+
+
+#define ECC_LENGTH	4  /* for debugging only. Actual value is 5 */
+/* load_memcpy_ecc():
+    copied and modified from lib/sfs.c */
+static int load_memcpy_ecc(uint32_t *mem_addr, uint32_t *load_addr, unsigned size, bool apply_ecc)
 {
     unsigned w, b;
 
     uint32_t nwords = size / sizeof(uint32_t);
-    uint32_t rem_bytes = (size) % sizeof(uint32_t);
 
-    for (w = 0; w < nwords; w++) {
-        * load_addr = * mem_addr;
-        load_addr++;
-        mem_addr++;
+    if (apply_ecc) {
+        uint32_t * ecc_eng_decode_input0 = (uint32_t *)ECC_ENG_DECODE_INPUT_REG0; 
+        uint32_t * ecc_eng_decode_input1 = (uint32_t *)ECC_ENG_DECODE_INPUT_REG1; 
+        uint32_t volatile * ecc_eng_decode_output = (uint32_t *)ECC_ENG_DECODE_OUTPUT_REG; 
+        uint32_t volatile * ecc_eng_decode_status = (uint32_t *)ECC_ENG_DECODE_STATUS_REG; 
+	//
+        /* assume 
+         *  1. all data + ECC stored at mem_addr is of size which is a multiple of 5
+         *  2. all data store at mem_addr is a multiple of 4
+         */
+        uint8_t * s_ptr = (uint8_t *)mem_addr;
+        uint32_t buff[2];
+        uint8_t * ptr_buff = (uint8_t *)&buff[0];
+    
+        /* every 5 32-bit words have 4 32-bit data and 1 32-bit ECC */
+        for (w = 0; w < nwords; w++, load_addr++, mem_addr++) {
+            /* read ECC_LENGTH bytes from mem_addr and write the data into ECC engine */
+            int i;
+            for (i = 0; i < ECC_LENGTH; i++, s_ptr++)
+                ptr_buff[i] = *s_ptr;
+#if 1
+	    uint32_t t_status = *ecc_eng_decode_status;
+            *ecc_eng_decode_input0 = buff[0];
+            *ecc_eng_decode_input1 = buff[1];
+            while (*ecc_eng_decode_status != t_status + 1) {
+                DPRINTF("Wait, status = 0x%x\r\n", *ecc_eng_decode_status);
+            }
+	    t_status = *ecc_eng_decode_status;
+            /* read 4 bytes from ecc_eng_decode_input_out and write it to mem_addr */
+            * load_addr = * ecc_eng_decode_output;
+	    if (*ecc_eng_decode_input0 != * ecc_eng_decode_output)
+                DPRINTF("Error: 0x%x != 0x%x at 0x%x-th word over total 0x%x words\r\n", * ecc_eng_decode_input0, * ecc_eng_decode_output, w, nwords);
+#else
+            *ecc_eng_decode_input0 = buff[0];
+            *ecc_eng_decode_input1 = buff[1]; 
+            * load_addr = buff[0];
+	    if (buff[0] != * mem_addr) DPRINTF("buff[0] = 0x%x != * mem_addr = 0x%x\r\n", buff[0], *mem_addr);
+#endif
+        }
     }
-    uint8_t *load_addr_8 = (uint8_t *) load_addr;
-    uint8_t *mem_addr_8 = (uint8_t *) mem_addr;
-    for (b = 0; b < rem_bytes; b++) {
-        * load_addr_8 = * mem_addr_8;
-        load_addr_8++;
-        mem_addr_8++;
+    else {
+        uint32_t rem_bytes = (size) % sizeof(uint32_t);
+        /* simple copy */
+        for (w = 0; w < nwords; w++) {
+            * load_addr = * mem_addr;
+            load_addr++;
+            mem_addr++;
+        }
+        uint8_t *load_addr_8 = (uint8_t *) load_addr;
+        uint8_t *mem_addr_8 = (uint8_t *) mem_addr;
+        for (b = 0; b < rem_bytes; b++) {
+            * load_addr_8 = * mem_addr_8;
+            load_addr_8++;
+            mem_addr_8++;
+        }
     }
-    return 0;
+        return 0;
 }
-
+    
 static int parity_check(uint8_t data)
 {
     int i, j, count;
@@ -233,10 +298,6 @@ int main_relocated ( void )
     /* load configuration blob */
     DPRINTF("BL0: read configuration blob\r\n");
     bl0_blob config_blob;
-    unsigned char * ptr1 = (unsigned char *)&config_blob;
-    unsigned char * ptr2 = (unsigned char *)config_blob.ecc;
-    unsigned int data_size = (unsigned long) ptr2 - (unsigned long) ptr1; 
-    unsigned char ecc_calc[ECC_512_SIZE];
     int i, j;
     int mem_ranks_trial = failover ? NUM_FAILOVER_MEM_RANKS : 1;
     int curr_mem_chip = mem_chip;
@@ -252,17 +313,12 @@ int main_relocated ( void )
 
             DPRINTF("BL0: cp config_blob from 0x%x to %p\r\n",
                    mem_addr, &config_blob);
-            load_memcpy((uint32_t *)(mem_addr), (uint32_t *)&config_blob,
-                        sizeof(config_blob));
-            show_config(&config_blob);
-
-            calculate_ecc((unsigned char *)&config_blob, data_size, ecc_calc);
-            DPRINTF("BL0: ecc %x %x %x\r\n",
-                   ecc_calc[0], ecc_calc[1], ecc_calc[2]);
-            if (correct_data((unsigned char *)&config_blob, config_blob.ecc,
-                             ecc_calc, data_size) < 0) {
+            if (load_memcpy_ecc((uint32_t *)(mem_addr), (uint32_t *)&config_blob,
+                        sizeof(config_blob), true)) {
+                DPRINTF("ECC failure in Configuration blob\r\n");
                 continue;
-            }
+            };
+            show_config(&config_blob);
 
             /* 
              load BL1 image to temporary address (bl1_load_addr + bl1_entry_offset).
@@ -274,8 +330,11 @@ int main_relocated ( void )
             mem_addr = mem_base_addr + config_blob.bl1_offset; /* + vtbl_size; */
             DPRINTF("BL0: load BL1 image (0x%x) to (0x%x), size(0x%x)\r\n",
                    mem_addr, load_addr, config_blob.bl1_size);
-            load_memcpy((uint32_t *)mem_addr, (uint32_t *)load_addr,
-                       config_blob.bl1_size);
+            if (load_memcpy_ecc((uint32_t *)mem_addr, (uint32_t *)load_addr,
+                       config_blob.bl1_size, true)) {
+                DPRINTF("ECC failure in BL1 image read\r\n");
+                continue;
+	    };
    
             /* checksum */   
             unsigned char output[SHA256_CHECKSUM_SIZE];
@@ -302,7 +361,7 @@ int main_relocated ( void )
     mem_addr += config_blob.bl1_entry_offset;
     DPRINTF("BL0: move BL1 image from (0x%x) to (0x%x), size(0x%x)\r\n",
            mem_addr, load_addr, config_blob.bl1_size);
-    load_memcpy((uint32_t *)mem_addr, (uint32_t *)load_addr, config_blob.bl1_size);
+    load_memcpy_ecc((uint32_t *)mem_addr, (uint32_t *)load_addr, config_blob.bl1_size, true);
 
     smc_deinit(smc);
  
