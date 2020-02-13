@@ -314,7 +314,7 @@ int main_relocated ( void )
             DPRINTF("BL0: cp config_blob from 0x%x to %p\r\n",
                    mem_addr, &config_blob);
             if (load_memcpy_ecc((uint32_t *)(mem_addr), (uint32_t *)&config_blob,
-                        sizeof(config_blob), true)) {
+                        sizeof(config_blob), false)) {
                 DPRINTF("ECC failure in Configuration blob\r\n");
                 continue;
             };
@@ -331,7 +331,7 @@ int main_relocated ( void )
             DPRINTF("BL0: load BL1 image (0x%x) to (0x%x), size(0x%x)\r\n",
                    mem_addr, load_addr, config_blob.bl1_size);
             if (load_memcpy_ecc((uint32_t *)mem_addr, (uint32_t *)load_addr,
-                       config_blob.bl1_size, true)) {
+                       config_blob.bl1_size, false)) {
                 DPRINTF("ECC failure in BL1 image read\r\n");
                 continue;
 	    };
@@ -361,7 +361,7 @@ int main_relocated ( void )
     mem_addr += config_blob.bl1_entry_offset;
     DPRINTF("BL0: move BL1 image from (0x%x) to (0x%x), size(0x%x)\r\n",
            mem_addr, load_addr, config_blob.bl1_size);
-    load_memcpy_ecc((uint32_t *)mem_addr, (uint32_t *)load_addr, config_blob.bl1_size, true);
+    load_memcpy_ecc((uint32_t *)mem_addr, (uint32_t *)load_addr, config_blob.bl1_size, false);
 
     smc_deinit(smc);
  
