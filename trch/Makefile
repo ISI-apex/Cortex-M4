@@ -8,6 +8,9 @@ TEST_FLAGS = \
 	TEST_TRCH_DMA \
 	TEST_TRCH_DMA_CB \
 	TEST_RT_MMU \
+	TEST_RT_MMU_BASIC \
+	TEST_RT_MMU_32_ACCESS_PHYSICAL \
+	TEST_RT_MMU_MAPPING_SWAP \
 	TEST_ETIMER \
 	TEST_RTI_TIMER \
 	TEST_SHMEM \
@@ -63,9 +66,13 @@ endif
 endif
 
 # Most tests are standalone, but some are not
-ifeq ($(strip $(TEST_RT_MMU)),1)
+ifeq ($(call cfg-or,\
+	$(TEST_RT_MMU) \
+	$(TEST_RT_MMU_BASIC) \
+	$(TEST_RT_MMU_32_ACCESS_PHYSICAL) \
+	$(TEST_RT_MMU_MAPPING_SWAP)),1)
 ifneq ($(strip $(CONFIG_RT_MMU)),1)
-$(error TEST_RT_MMU requires CONFIG_RT_MMU)
+$(error TEST_*_MMU_* require CONFIG_RT_MMU)
 endif
 endif
 ifeq ($(strip $(TEST_WDTS)),1)
@@ -190,7 +197,11 @@ endif
 ifeq ($(strip $(TEST_TRCH_DMA)),1)
 OBJS += tests/dma.o
 endif
-ifeq ($(strip $(TEST_RT_MMU)),1)
+ifeq ($(call cfg-or,\
+	$(TEST_RT_MMU) \
+	$(TEST_RT_MMU_BASIC) \
+	$(TEST_RT_MMU_32_ACCESS_PHYSICAL) \
+	$(TEST_RT_MMU_MAPPING_SWAP)),1)
 OBJS += tests/mmu.o
 endif
 ifeq ($(strip $(TEST_WDTS)),1)
