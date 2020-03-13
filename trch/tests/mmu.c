@@ -56,13 +56,15 @@ cleanup_hi1_win:
 #endif /* TEST_RT_MMU_BASIC */
 
 #if TEST_RT_MMU_32_ACCESS_PHYSICAL
-static int test_rt_mmu_32_access_physical_mwr(uint32_t virt_write_addr, uint32_t phy_read_addr, unsigned mapping_sz){
+static int test_rt_mmu_32_access_physical_mwr(uint32_t virt_write_addr,
+        uint32_t phy_read_addr, unsigned mapping_sz) {
     //map-write-read test
     //1. TRCH creates a mapping
     //2. TRCH enables MMU
     //3. TRCH writes to an address in the mapping created
     //4. TRCH disables MMU
-    //5. TRCH reads the physical address where the data was written to and checks if the data is correct
+    //5. TRCH reads the physical address where the data was written to and
+    //   checks if the data is correct
 
     //Test is successful if TRCH reads the correct data
 
@@ -91,19 +93,19 @@ static int test_rt_mmu_32_access_physical_mwr(uint32_t virt_write_addr, uint32_t
 
     trch_ctx = mmu_context_create(mmu_32, ba, MMU_PAGESIZE_4KB);
     if (!trch_ctx) {
-        printf("test mmu 32-bit access physical map-write-read: trch context create failed\n");
+        printf("TEST: rt mmu: 32-bit phys map-write-read: trch context create failed\r\n");
         goto cleanup_context;
     }
 
     trch_stream = mmu_stream_create(MASTER_ID_TRCH_CPU, trch_ctx);
     if (!trch_stream) {
-        printf("test mmu 32-bit access physical map-write-read: trch stream create failed\n");
+        printf("TEST: rt mmu: 32-bit phys map-write-read: trch stream create failed\r\n");
         goto cleanup_stream;
     }
 
     if (mmu_map(trch_ctx, virt_write_addr, phy_read_addr,
                           mapping_sz)) {
-        printf("test mmu 32-bit access physical map-write-read: mapping create failed\n");
+        printf("TEST: rt mmu: 32-bit phys map-write-read: mapping create failed\r\n");
         goto cleanup_map;
     }
 
@@ -118,7 +120,7 @@ static int test_rt_mmu_32_access_physical_mwr(uint32_t virt_write_addr, uint32_t
         success = 1;
     }
     else {
-        printf("test mmu 32-bit access physical map-write-read: read wrong value\n");
+        printf("TEST: rt mmu: 32-bit phys map-write-read: read wrong value\r\n");
         success = 0;
     }
 
@@ -150,7 +152,8 @@ static int test_rt_mmu_32_access_physical_wmr(uint32_t virt_read_addr, uint32_t
     //1. TRCH creates a mapping
     //2. TRCH writes to a low physical address
     //3. TRCH enables MMU
-    //4. TRCH reads the virtual address corresponding to the physical address written to and checks if data is correct
+    //4. TRCH reads the virtual address corresponding to the physical address
+    //   written to and checks if data is correct
 
     //Test is successful if TRCH reads the correct data
 
@@ -179,13 +182,15 @@ static int test_rt_mmu_32_access_physical_wmr(uint32_t virt_read_addr, uint32_t
 
     trch_ctx = mmu_context_create(mmu_32, ba, MMU_PAGESIZE_4KB);
     if (!trch_ctx) {
-        printf("test mmu 32-bit access physical write-map-read: trch context create failed\n");
+        printf("TEST: rt mmu: 32-bit phys write-map-read: "
+               "trch context create failed\r\n");
         goto cleanup_context;
     }
 
     trch_stream = mmu_stream_create(MASTER_ID_TRCH_CPU, trch_ctx);
     if (!trch_stream) {
-        printf("test mmu 32-bit access physical write-map-read: trch stream create failed\n");
+        printf("TEST: rt mmu: 32-bit phys write-map-read: "
+               "trch stream create failed\r\n");
         goto cleanup_stream;
     }
 
@@ -194,7 +199,8 @@ static int test_rt_mmu_32_access_physical_wmr(uint32_t virt_read_addr, uint32_t
 
     if (mmu_map(trch_ctx, virt_read_addr, phy_write_addr,
                           mapping_sz)) {
-        printf("test mmu 32-bit access physical write-map-read: mapping create failed\n");
+        printf("TEST: rt mmu: 32-bit phys write-map-read: "
+               "mapping create failed\r\n");
         goto cleanup_map;
     }
 
@@ -205,7 +211,7 @@ static int test_rt_mmu_32_access_physical_wmr(uint32_t virt_read_addr, uint32_t
         success = 1;
     }
     else {
-        printf("test mmu 32-bit access physical write-map-read: read wrong value\n");
+        printf("TEST: rt mmu: 32-bit phys write-map-read: read wrong value\r\n");
         success = 0;
     }
 
@@ -268,19 +274,20 @@ static int test_rt_mmu_mapping_swap(uint32_t virt_write_addr, uint32_t
 
     trch_ctx = mmu_context_create(mmu_32, ba, MMU_PAGESIZE_4KB);
     if (!trch_ctx) {
-        printf("test mmu mapping swap: trch context create failed\n");
+        printf("TEST: rt mmu: swap: trch context create failed\r\n");
         goto cleanup_context;
     }
 
     trch_stream = mmu_stream_create(MASTER_ID_TRCH_CPU, trch_ctx);
     if (!trch_stream) {
-        printf("test mmu mapping swap: trch stream create failed\n");
+        printf("TEST: rt mmu: swap: trch stream create failed\r\n");
         goto cleanup_stream;
     }
 
     if (mmu_map(trch_ctx, virt_write_addr, phy_addr,
                           mapping_sz)) {
-        printf("test mmu mapping swap: addr_from_1->addr_to mapping create failed\n");
+        printf("TEST: rt mmu: swap: "
+               "addr_from_1->addr_to mapping create failed\r\n");
         goto cleanup_map;
     }
 
@@ -295,7 +302,8 @@ static int test_rt_mmu_mapping_swap(uint32_t virt_write_addr, uint32_t
 
     if (mmu_map(trch_ctx, virt_read_addr, phy_addr,
                           mapping_sz)) {
-        printf("test mmu mapping swap: addr_from_1->addr_to mapping create failed\n");
+        printf("TEST: rt mmu: swap: "
+               "addr_from_1->addr_to mapping create failed\r\n");
         goto cleanup_map;
     }
 
@@ -305,7 +313,8 @@ static int test_rt_mmu_mapping_swap(uint32_t virt_write_addr, uint32_t
         success = 1;
     }
     else {
-        printf("test mmu mapping swap: read wrong value %lx \n", *((uint32_t*)virt_read_addr));
+        printf("TEST: rt mmu: swap: read wrong value %lx\r\n",
+                *((uint32_t*)virt_read_addr));
         success = 0;
     }
 
@@ -338,24 +347,27 @@ int test_rt_mmu()
 #endif /* TEST_RT_MMU_BASIC */
 
 #if TEST_RT_MMU_32_ACCESS_PHYSICAL
-    if (test_rt_mmu_32_access_physical_mwr(RT_MMU_TEST_DATA_LO_0_ADDR, RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_LO_SIZE))
-        panic("MMU 32-bit access test map-write-read");
+    if (test_rt_mmu_32_access_physical_mwr(RT_MMU_TEST_DATA_LO_0_ADDR,
+                RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_LO_SIZE))
+        panic("TEST: rt mmu: 32-bit access map-write-read");
     else
-        printf("MMU map-write-read test success\n");
+        printf("TEST: rt mmu: 32-bit access map-write-read: success\r\n");
 
-    if (test_rt_mmu_32_access_physical_wmr(RT_MMU_TEST_DATA_LO_0_ADDR, RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_LO_SIZE))
-        panic("MMU 32-bit access test write-map-read");
+    if (test_rt_mmu_32_access_physical_wmr(RT_MMU_TEST_DATA_LO_0_ADDR,
+                RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_LO_SIZE))
+        panic("TEST: rt mmu: 32-bit access write-map-read");
     else
-        printf("MMU write-map-read test success\n");
+        printf("TEST: rt mmu: 32-bit access write-map-read: success\r\n");
 #endif /* TEST_RT_MMU_32_ACCESS_PHYSICAL */
 
 #if TEST_RT_MMU_MAPPING_SWAP
     //map argument 1 to argument 3 then argument 2 to argument 3
-    if (test_rt_mmu_mapping_swap(RT_MMU_TEST_DATA_LO_0_ADDR, RT_MMU_TEST_DATA_LO_1_ADDR,
-                RT_MMU_TEST_DATA_HI_0_ADDR, RT_MMU_TEST_DATA_LO_SIZE))
-        panic("MMU mapping swap");
+    if (test_rt_mmu_mapping_swap(RT_MMU_TEST_DATA_LO_0_ADDR,
+                RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_HI_0_ADDR,
+                RT_MMU_TEST_DATA_LO_SIZE))
+        panic("TEST: rt mmu: 32-bit mapping swap");
     else
-        printf("MMU mapping swap test success\n");
+        printf("TEST: rt mmu: 32-bit mapping swap test success\r\n");
 #endif /* TEST_RT_MMU_MAPPING_SWAP */
 
     return 0;
