@@ -97,11 +97,10 @@
 #define RTPS_HPPS_PT_ADDR                0x87e00000
 #define RTPS_HPPS_PT_SIZE                  0x1ff000
 
-#if 0 /* TODO: allocate (not yet implemented for memmap v14!) */
-#define RT_MMU_TEST_DATA_LO_0_ADDR	 0x87ffe000 /* TODO: overlaps with something! */
+/* TODO: these have not been verified for memmap v14! might overlap with something! */
+#define RT_MMU_TEST_DATA_LO_0_ADDR	 0x87ffe000
 #define RT_MMU_TEST_DATA_LO_1_ADDR	 0x87fff000
 #define RT_MMU_TEST_DATA_LO_SIZE	 0x00001000
-#endif
 
 // Full HPPS DRAM
 #define HPPS_DDR_LOW_ADDR__HPPS_SMP				  0x80000000

@@ -7,7 +7,7 @@
 int test_rt_mmu()
 {
     // Translated by MMU via identity map (in HPPS LOW DRAM)
-    volatile uint32_t *addr = (volatile uint32_t *)RT_MMU_TEST_DATA_LO_ADDR;
+    volatile uint32_t *addr = (volatile uint32_t *)RT_MMU_TEST_DATA_LO_1_ADDR;
     uint32_t valref = 0xf00dcafe;
     printf("%p <- %08x\r\n", addr, valref);
     *addr = valref;

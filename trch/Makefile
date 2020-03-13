@@ -75,6 +75,12 @@ ifneq ($(strip $(CONFIG_RT_MMU)),1)
 $(error TEST_*_MMU_* require CONFIG_RT_MMU)
 endif
 endif
+ifeq ($(strip $(TEST_RT_MMU_MAPPING_SWAP)),1)
+ifneq ($(strip $(TEST_RT_MMU_BASIC)),1)
+$(error TEST_RT_MMU_MAPPING_SWAP requires TEST_RT_MMU_BASIC)
+endif
+endif
+
 ifeq ($(strip $(TEST_WDTS)),1)
 ifneq ($(call cfg-or,$(CONFIG_TRCH_WDT) $(CONFIG_RTPS_R52_WDT) $(CONFIG_HPPS_WDT)),1)
 $(error TEST_WDTS requires one of CONFIG_*_WDT)
