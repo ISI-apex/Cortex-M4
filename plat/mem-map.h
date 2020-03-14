@@ -20,6 +20,10 @@
 // RTPS //
 //////////
 
+// Used by RTEMS
+#define RTPS_DDR_ADDR__RTPS_R52_LOCKSTEP               0x40000000
+#define RTPS_DDR_SIZE__RTPS_R52_LOCKSTEP               0x7e000000 // excludes shm
+
 // Page tables for RTPS MMU: in RPTS DRAM
 #define RTPS_PT_ADDR 0x40060000
 #define RTPS_PT_SIZE   0x200000
