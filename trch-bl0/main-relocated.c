@@ -106,7 +106,7 @@ static inline int diff_checksum(unsigned char * a, unsigned char * b) {
     DPRINTF("\r\n");
     for (i = 0; i < SHA256_CHECKSUM_SIZE; i++) {
         if (a[i] != b[i]) {
-		DPRINTF("%s: a[%d] (0x%x) != b[%d] (0x%x)\n", __func__, i, a[i], i, b[i]);
+		DPRINTF("%s: a[%d] (0x%x) != b[%d] (0x%x)\r\n", __func__, i, a[i], i, b[i]);
 		return 1;
 	}
     }
