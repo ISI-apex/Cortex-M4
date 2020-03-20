@@ -148,7 +148,7 @@ int handle_psci(struct cmd * cmd, uint8_t *reply_buf, unsigned reply_sz)
     reply_len = 0;
     ASSERT(reply_sz > reply_len);
     /* TODO: hack for HPPS until mailbox code in ATF fixed to ACK reply */
-    if (!(NODE_APU_0 <= sender && sender < NODE_APU_7)) {
+    if (!(NODE_APU_0 <= sender && sender <= NODE_APU_7)) {
         reply_buf[reply_len++] = rc;
     }
     return reply_len;
