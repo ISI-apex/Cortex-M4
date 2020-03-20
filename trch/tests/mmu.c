@@ -349,15 +349,15 @@ int test_rt_mmu()
 #if TEST_RT_MMU_32_ACCESS_PHYSICAL
     if (test_rt_mmu_32_access_physical_mwr(RT_MMU_TEST_DATA_LO_0_ADDR,
                 RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_LO_SIZE))
-        panic("TEST: rt mmu: 32-bit access map-write-read");
+        panic("TEST: rt mmu: map-write-read");
     else
-        printf("TEST: rt mmu: 32-bit access map-write-read: success\r\n");
+        printf("TEST: rt mmu: map-write-read: success\r\n");
 
     if (test_rt_mmu_32_access_physical_wmr(RT_MMU_TEST_DATA_LO_0_ADDR,
                 RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_LO_SIZE))
-        panic("TEST: rt mmu: 32-bit access write-map-read");
+        panic("TEST: rt mmu: write-map-read");
     else
-        printf("TEST: rt mmu: 32-bit access write-map-read: success\r\n");
+        printf("TEST: rt mmu: write-map-read: success\r\n");
 #endif /* TEST_RT_MMU_32_ACCESS_PHYSICAL */
 
 #if TEST_RT_MMU_MAPPING_SWAP
@@ -365,9 +365,9 @@ int test_rt_mmu()
     if (test_rt_mmu_mapping_swap(RT_MMU_TEST_DATA_LO_0_ADDR,
                 RT_MMU_TEST_DATA_LO_1_ADDR, RT_MMU_TEST_DATA_HI_0_ADDR,
                 RT_MMU_TEST_DATA_LO_SIZE))
-        panic("TEST: rt mmu: 32-bit mapping swap");
+        panic("TEST: rt mmu: mapping swap");
     else
-        printf("TEST: rt mmu: 32-bit mapping swap test success\r\n");
+        printf("TEST: rt mmu: mapping swap: success\r\n");
 #endif /* TEST_RT_MMU_MAPPING_SWAP */
 
     return 0;
